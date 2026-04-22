@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Единая база исторической реконструкции - Главная</title>
+    
+    <!-- Favicon - эмодзи свитка 📜 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%238b4513%22>📜</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%238b4513%22>📜</text></svg>">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            /* Фон - текстура каштановые доски из файла fon.jpg */
+            background-image: url('fon.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            min-height: 100vh;
+        }
+        
+        /* Затемнение фона для лучшей читаемости */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 20, 10, 0.7);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Кнопка обратной связи */
+        .feedback-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(139, 69, 19, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #c17e1a;
+        }
+        
+        .feedback-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.5);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 30px;
+            background: rgba(245, 235, 220, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.3);
+            border: 2px solid #d4a574;
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: 900;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        
+        /* Меню навигации */
+        .nav-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .nav-card {
+            background: linear-gradient(to bottom, #fef9f3 0%, #f5ebd8 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
+            transition: transform 0.4s, box-shadow 0.4s;
+            border: 2px solid #d4a574;
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(139, 69, 19, 0.4);
+        }
+        
+        .nav-card-header {
+            padding: 30px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            text-align: center;
+        }
+        
+        .nav-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .nav-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 700;
+        }
+        
+        .nav-card-body {
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .nav-description {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #f5ebd8;
+            font-size: 1rem;
+            border-top: 2px solid #d4a574;
+            margin-top: auto;
+            background: rgba(30, 20, 10, 0.8);
+            border-radius: 15px;
+        }
+        
+        .footer-notice {
+            margin: 15px 0;
+            padding: 10px;
+            color: #f5ebd8;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .author-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .author-link {
+            color: #e6a336;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #d4a574;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            background: rgba(139, 69, 19, 0.2);
+        }
+        
+        .author-link:hover {
+            background: rgba(230, 163, 54, 0.2);
+            color: #ffcc66;
+            transform: translateY(-2px);
+        }
+        
+        /* Модальное окно обратной связи (аналогично существующему) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: linear-gradient(to bottom, #fef9f3 0%, #f5ebd8 100%);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 3px solid #d4a574;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            animation: modalAppear 0.3s ease-out;
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid #d4a574;
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .modal-subtitle {
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #8b4513;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-button:hover {
+            background: rgba(139, 69, 19, 0.1);
+        }
+        
+        /* Форма обратной связи */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #8b4513;
+            font-size: 1.1rem;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            background: rgba(255, 248, 240, 0.9);
+            font-size: 1rem;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #e6a336;
+            box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+            background: rgba(255, 252, 248, 0.95);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            cursor: pointer;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .submit-button {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #c17e1a;
+        }
+        
+        .submit-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-2px);
+        }
+        
+        .cancel-button {
+            flex: 1;
+            padding: 15px;
+            background: rgba(139, 69, 19, 0.1);
+            color: #8b4513;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cancel-button:hover {
+            background: rgba(139, 69, 19, 0.2);
+        }
+        
+        .form-note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .contact-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .contact-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid #c17e1a;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
+        .contact-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .nav-title {
+                font-size: 1.5rem;
+            }
+            
+            .author-links {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .feedback-button {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                max-height: 85vh;
+            }
+            
+            .form-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Единая база исторической реконструкции</h1>
+            <p class="subtitle">Перед вами — база данных по исторической реконструкции, охватывающая все исторические эпохи, а также такие направления, как ИСБ, HEMA и СМБ. На данный момент база сосредоточена на России и соседних странах. Она активно пополняется, поскольку ещё не все существующие клубы, фестивали и магазины этого региона внесены в неё. В будущем планируется максимально расширить географию проекта.</p>
+        </header>
+        
+        <div class="nav-menu">
+            <a href="clubs.html" class="nav-card">
+                <div class="nav-card-header">
+                    <span class="nav-icon">🏛️</span>
+                    <h2 class="nav-title">Клубы</h2>
+                </div>
+                <div class="nav-card-body">
+                    <p class="nav-description">Каталог клубов исторической реконструкции. Поиск по городам, странам, историческим эпохам и направлениям.</p>
+                </div>
+            </a>
+            
+            <a href="festivals.html" class="nav-card">
+                <div class="nav-card-header">
+                    <span class="nav-icon">🎪</span>
+                    <h2 class="nav-title">Фестивали</h2>
+                </div>
+                <div class="nav-card-body">
+                    <p class="nav-description">Календарь фестивалей исторической реконструкции. Даты, места проведения и подробная информация о мероприятиях.</p>
+                </div>
+            </a>
+            
+            <a href="shops.html" class="nav-card">
+                <div class="nav-card-header">
+                    <span class="nav-icon">🛒</span>
+                    <h2 class="nav-title">Магазины</h2>
+                </div>
+                <div class="nav-card-body">
+                    <p class="nav-description">Каталог магазинов, мастерских и производителей снаряжения для исторической реконструкции.</p>
+                </div>
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>Данные обновлены: <span id="currentDate"></span></p>
+            <div class="footer-notice">
+                ⚠️ Данный сайт является неофициальным общественным проектом и не связан с государственными информационными системами.
+            </div>
+            <div class="author-links">
+                <a href="https://vk.com/vsevolod_anadyrsky" target="_blank" class="author-link">Автор: Всеволод Забалуев</a>
+                <a href="https://vk.com/sarkelvrn" target="_blank" class="author-link">Клуб: КВИРиР «Саркел»</a>
+            </div>
+        </div>
+    </div>
+
+    <button class="feedback-button" id="feedbackButton">
+        <span>✉️</span>
+        <span>Обратная связь</span>
+    </button>
+
+    <!-- Модальное окно обратной связи -->
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-content">
+            <button class="close-button" id="closeModal">&times;</button>
+            
+            <div class="modal-header">
+                <h2 class="modal-title">Обратная связь</h2>
+                <p class="modal-subtitle">Заполните форму, чтобы связаться с разработчиком</p>
+            </div>
+            
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label class="form-label" for="formType">Тип обращения:</label>
+                    <select class="form-select" id="formType" name="formType" required>
+                        <option value="">Выберите тип обращения</option>
+                        <option value="feedback">Обратная связь/предложение</option>
+                        <option value="error">Сообщение об ошибке</option>
+                        <option value="suggestion">Предложение по развитию</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="subject">Тема:</label>
+                    <input type="text" class="form-input" id="subject" name="subject" placeholder="Введите тему обращения" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="message">Сообщение:</label>
+                    <textarea class="form-textarea" id="message" name="message" placeholder="Ваше сообщение..." required></textarea>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="submit-button">Скопировать сообщение</button>
+                    <button type="button" class="cancel-button" id="cancelForm">Отмена</button>
+                </div>
+                
+                <p class="form-note">
+                    Сообщение будет скопировано в буфер обмена. Отправьте его одним из способов:
+                </p>
+                
+                <div class="contact-buttons">
+                    <a href="mailto:vsevolodzabaluev@yandex.ru?subject=Обратная связь с базы исторической реконструкции" class="contact-button">
+                        <span>📧</span>
+                        <span>Написать на email: vsevolodzabaluev@yandex.ru</span>
+                    </a>
+                    <a href="https://vk.com/vsevolod_anadyrsky" target="_blank" class="contact-button">
+                        <span>👤</span>
+                        <span>Написать в ВК автора</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function setCurrentDate() {
+            const now = new Date();
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const formattedDate = now.toLocaleDateString('ru-RU', options);
+            document.getElementById('currentDate').textContent = formattedDate;
+        }
+        
+        function initFeedbackModal() {
+            const feedbackButton = document.getElementById('feedbackButton');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const closeModal = document.getElementById('closeModal');
+            const cancelForm = document.getElementById('cancelForm');
+            const feedbackForm = document.getElementById('feedbackForm');
+            
+            // Открыть модальное окно обратной связи
+            feedbackButton.addEventListener('click', () => {
+                feedbackModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // Закрыть модальное окно обратной связи
+            function closeFeedbackModal() {
+                feedbackModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            closeModal.addEventListener('click', closeFeedbackModal);
+            cancelForm.addEventListener('click', closeFeedbackModal);
+            
+            // Закрыть по клику вне окна
+            feedbackModal.addEventListener('click', (e) => {
+                if (e.target === feedbackModal) {
+                    closeFeedbackModal();
+                }
+            });
+            
+            // Обработка отправки формы обратной связи
+            feedbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    type: document.getElementById('formType').value,
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value,
+                    timestamp: new Date().toLocaleString('ru-RU'),
+                    page: window.location.href
+                };
+                
+                const message = formatMessage(formData);
+                
+                // Копируем сообщение в буфер обмена
+                navigator.clipboard.writeText(message)
+                    .then(() => {
+                        showNotification('Сообщение скопировано в буфер обмена! Отправьте его на email или в ВК автора');
+                    })
+                    .catch(err => {
+                        console.error('Ошибка копирования: ', err);
+                        showNotification('Не удалось скопировать сообщение. Скопируйте текст вручную.');
+                        // Показываем сообщение для ручного копирования
+                        alert('Пожалуйста, скопируйте следующий текст и отправьте на email vsevolodzabaluev@yandex.ru или в ВК автора:\n\n' + message);
+                    });
+                
+                closeFeedbackModal();
+                feedbackForm.reset();
+            });
+        }
+        
+        function formatMessage(data) {
+            let message = `📋 Обращение с главной страницы базы исторической реконструкции\n\n`;
+            message += `📌 Тип: ${data.type}\n`;
+            message += `📄 Тема: ${data.subject}\n\n`;
+            message += `📝 Сообщение:\n${data.message}\n\n`;
+            message += `⏰ Время отправки: ${data.timestamp}\n`;
+            message += `🔗 Страница: ${data.page}\n\n`;
+            message += `────────────────────────────────\n`;
+            message += `Отправьте это сообщение одним из способов:\n`;
+            message += `📧 Email: vsevolodzabaluev@yandex.ru\n`;
+            message += `👤 ВК автора: https://vk.com/vsevolod_anadyrsky`;
+            
+            return message;
+        }
+        
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #e6a336, #d1891c);
+                color: #333;
+                padding: 15px 25px;
+                border-radius: 10px;
+                border: 2px solid #c17e1a;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                z-index: 1002;
+                font-weight: 600;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            notification.textContent = text;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+            
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setCurrentDate();
+            initFeedbackModal();
+        });
+    </script>
+</body>
+</html>

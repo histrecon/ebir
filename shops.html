@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог магазинов ЕБИР</title>
+    
+    <!-- Favicon - эмодзи свитка 📜 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%238b4513%22>📜</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%238b4513%22>📜</text></svg>">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS (OpenStreetMap) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+            /* Фон - текстура каштановые доски из файла fon.jpg */
+            background-image: url('fon.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            min-height: 100vh;
+        }
+        
+        /* Затемнение фона для лучшей читаемости */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 20, 10, 0.7);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        /* Кнопка обратной связи */
+        .feedback-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(139, 69, 19, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #c17e1a;
+        }
+        
+        .feedback-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.5);
+        }
+        
+        .feedback-button:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: linear-gradient(to bottom, #fef9f3 0%, #f5ebd8 100%);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 3px solid #d4a574;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            animation: modalAppear 0.3s ease-out;
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid #d4a574;
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .modal-subtitle {
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #8b4513;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-button:hover {
+            background: rgba(139, 69, 19, 0.1);
+        }
+        
+        /* Форма */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #8b4513;
+            font-size: 1.1rem;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            background: rgba(255, 248, 240, 0.9);
+            font-size: 1rem;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #e6a336;
+            box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+            background: rgba(255, 252, 248, 0.95);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b4513' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+            padding-right: 45px;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .submit-button {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #c17e1a;
+        }
+        
+        .submit-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-2px);
+        }
+        
+        .cancel-button {
+            flex: 1;
+            padding: 15px;
+            background: rgba(139, 69, 19, 0.1);
+            color: #8b4513;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cancel-button:hover {
+            background: rgba(139, 69, 19, 0.2);
+        }
+        
+        .form-note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .email-address {
+            font-weight: bold;
+            color: #8b4513;
+            background: rgba(255, 228, 196, 0.5);
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #d4a574;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        /* Стили для контейнера с контактами */
+        .contact-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .contact-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid #c17e1a;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
+        .contact-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(245, 235, 220, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.3);
+            border: 2px solid #d4a574;
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: 900;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(245, 235, 220, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.2);
+            border: 2px solid #d4a574;
+        }
+        
+        .search-row {
+            width: 100%;
+        }
+        
+        .search-box {
+            width: 100%;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 248, 240, 0.9);
+            transition: all 0.3s;
+            color: #333;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #e6a336;
+            box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+            background: rgba(255, 252, 248, 0.95);
+        }
+        
+        .search-box input::placeholder {
+            color: #8b7355;
+        }
+        
+        .filters-row {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        
+        select {
+            padding: 14px 18px;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            background: rgba(255, 248, 240, 0.9);
+            font-size: 1rem;
+            cursor: pointer;
+            min-width: 180px;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #e6a336;
+            box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+            background: rgba(255, 252, 248, 0.95);
+        }
+        
+        /* Кнопка информации о тегах */
+        .tags-info-button {
+            padding: 14px 18px;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .tags-info-button:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-2px);
+        }
+        
+        .tags-info-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Модальное окно для расшифровки тегов */
+        .tags-modal {
+            max-width: 800px;
+            max-height: 80vh;
+        }
+        
+        .tags-content {
+            padding: 10px 5px 10px 0;
+        }
+        
+        .tags-list {
+            list-style-type: none;
+        }
+        
+        .tags-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 165, 116, 0.5);
+        }
+        
+        .tags-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .tag-name {
+            font-weight: bold;
+            color: #8b4513;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-family: 'Cinzel', serif;
+        }
+        
+        .tag-description {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .map-container {
+            margin-bottom: 30px;
+            background: rgba(245, 235, 220, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.2);
+            border: 2px solid #d4a574;
+            height: 500px;
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 13px;
+        }
+        
+        .flag-marker {
+            position: relative;
+            width: 40px;
+            height: 50px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .flag-marker:hover {
+            transform: scale(1.2);
+        }
+        
+        .flag-pole {
+            position: absolute;
+            left: 18px;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #8b4513, #654321);
+            border-radius: 2px;
+        }
+        
+        .flag-body {
+            position: absolute;
+            left: 22px;
+            top: 5px;
+            width: 30px;
+            height: 20px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            border-radius: 3px 8px 8px 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .flag-count {
+            color: #333;
+            font-weight: bold;
+            font-size: 11px;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+        }
+        
+        .stats {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(245, 235, 220, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
+            font-size: 1.1rem;
+            text-align: center;
+            color: #333;
+            border: 2px solid #d4a574;
+        }
+        
+        .shops-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .shop-card {
+            background: linear-gradient(to bottom, #fef9f3 0%, #f5ebd8 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
+            transition: transform 0.4s, box-shadow 0.4s;
+            position: relative;
+            border: 2px solid #d4a574;
+            color: #333;
+        }
+        
+        .shop-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(45deg, transparent 10%, #f5ebd8 10%, #f5ebd8 90%, transparent 90%),
+                        linear-gradient(-45deg, transparent 10%, #f5ebd8 10%, #f5ebd8 90%, transparent 90%);
+            background-size: 20px 20px;
+            z-index: 1;
+        }
+        
+        .shop-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(45deg, transparent 10%, #f5ebd8 10%, #f5ebd8 90%, transparent 90%),
+                        linear-gradient(-45deg, transparent 10%, #f5ebd8 10%, #f5ebd8 90%, transparent 90%);
+            background-size: 20px 20px;
+            z-index: 1;
+        }
+        
+        .shop-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(139, 69, 19, 0.4);
+        }
+        
+        .shop-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .shop-name {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #333;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .shop-location {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        .shop-location:hover {
+            opacity: 1;
+        }
+        
+        .shop-body {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .shop-field {
+            margin-bottom: 20px;
+        }
+        
+        .field-label {
+            font-weight: 700;
+            color: #8b4513;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .eras-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .era-tag {
+            background-color: #ffe4c4;
+            color: #8b4513;
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid #d4a574;
+        }
+        
+        .shop-footer {
+            padding: 20px 25px;
+            background-color: #f5ebd8;
+            border-top: 2px solid #d4a574;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .vk-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #e6a336, #d1891c);
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid #c17e1a;
+        }
+        
+        .vk-link:hover {
+            background: linear-gradient(135deg, #d1891c, #b8731a);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+        
+        .website-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #36aee6, #1c6dd1);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid #1a5cc1;
+        }
+        
+        .website-link:hover {
+            background: linear-gradient(135deg, #1c6dd1, #1a5cb8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(28, 109, 209, 0.3);
+        }
+        
+        .shop-id {
+            color: #8b7355;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+            font-size: 1.3rem;
+            color: #f5ebd8;
+            grid-column: 1 / -1;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+            color: #f5ebd8;
+            font-size: 1.3rem;
+            background: rgba(245, 235, 220, 0.95);
+            border-radius: 15px;
+            border: 2px solid #d4a574;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #f5ebd8;
+            font-size: 1rem;
+            border-top: 2px solid #d4a574;
+            margin-top: 40px;
+            background: rgba(30, 20, 10, 0.8);
+            border-radius: 15px;
+        }
+        
+        .author-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .author-link {
+            color: #e6a336;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #d4a574;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            background: rgba(139, 69, 19, 0.2);
+        }
+        
+        .author-link:hover {
+            background: rgba(230, 163, 54, 0.2);
+            color: #ffcc66;
+            transform: translateY(-2px);
+        }
+        
+        .reset-button {
+            padding: 14px 18px;
+            border: 2px solid #d4a574;
+            border-radius: 10px;
+            background: rgba(255, 248, 240, 0.9);
+            font-size: 1rem;
+            cursor: pointer;
+            color: #333;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .reset-button:hover {
+            background: #ffe4c4;
+            border-color: #e6a336;
+            transform: translateY(-2px);
+        }
+        
+        /* Убраны стили для старой кнопки home-button */
+        
+        @media (max-width: 768px) {
+            .shops-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                padding: 20px;
+            }
+            
+            .search-row {
+                width: 100%;
+            }
+            
+            .map-container {
+                height: 400px;
+            }
+            
+            .filters-row {
+                width: 100%;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+            
+            .filter-group {
+                width: 100%;
+                position: relative;
+            }
+            
+            select, .reset-button, .tags-info-button {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .author-links {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .feedback-button {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                max-height: 85vh;
+            }
+            
+            .form-buttons {
+                flex-direction: column;
+            }
+            
+            .tags-modal {
+                max-width: 95vw;
+                max-height: 85vh;
+            }
+            
+            .contact-buttons {
+                flex-direction: column;
+            }
+            
+            .contact-button {
+                width: 100%;
+            }
+            
+            header {
+                padding-top: 50px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .map-container {
+                height: 350px;
+            }
+            
+            .feedback-button {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .tags-modal {
+                max-height: 80vh;
+            }
+        }
+        
+        .leaflet-control-zoom {
+            border: 2px solid #d4a574 !important;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .leaflet-control-zoom a {
+            background-color: #f5ebd8 !important;
+            color: #333 !important;
+            border-bottom: 1px solid #d4a574 !important;
+        }
+        
+        .leaflet-control-zoom a:hover {
+            background-color: #ffe4c4 !important;
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-width: 250px;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            border: 2px solid #d4a574;
+            background-color: #f5ebd8;
+        }
+        
+        .leaflet-popup-tip {
+            background-color: #f5ebd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- УДАЛЕНА СТАРАЯ КНОПКА "НА ГЛАВНУЮ" -->
+        
+        <header>
+            <h1>Каталог магазинов ЕБИР</h1>
+            <p class="subtitle">Каталог активно пополняется. Если вы хотите добавить информацию о уже внесенном магазине/мастерской/производителе или о котором еще нет информации пишите в обратную связь.</p>
+        </header>
+        
+        <div class="controls">
+            <div class="search-row">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Поиск по названию магазина, городу или специализации...">
+                </div>
+            </div>
+            <div class="filters-row">
+                <div class="filters">
+                    <select id="countryFilter">
+                        <option value="">Все страны</option>
+                    </select>
+                    <select id="cityFilter">
+                        <option value="">Все города</option>
+                    </select>
+                    <div class="filter-group">
+                        <select id="eraFilter">
+                            <option value="">Все эпохи</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="specializationFilter">
+                            <option value="">Все специализации</option>
+                        </select>
+                    </div>
+                    <button class="tags-info-button" id="tagsInfoButton">
+                        <span>📖</span>
+                        <span>Расшифровка тегов</span>
+                    </button>
+                    <button class="reset-button" id="resetButton">Сбросить фильтры</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        
+        <div class="stats" id="stats">
+            Загрузка данных...
+        </div>
+        
+        <div class="shops-container" id="shopsContainer">
+            <div class="loading">Загрузка магазинов...</div>
+        </div>
+        
+        <div class="footer">
+            <p>Данные обновлены: <span id="currentDate"></span> | Всего магазинов в базе: <span id="totalShops">0</span></p>
+            <div class="footer-notice">
+                ⚠️ Данный сайт является неофициальным общественным проектом и не связан с государственными информационными системами.
+            </div>		
+            <div class="author-links">
+                <a href="https://vk.com/vsevolod_anadyrsky" target="_blank" class="author-link">Автор: Всеволод Забалуев</a>
+                <a href="https://vk.com/sarkelvrn" target="_blank" class="author-link">Клуб: КВИРиР «Саркел»</a>
+            </div>
+        </div>
+    </div>
+
+    <button class="feedback-button" id="feedbackButton">
+        <span>✉️</span>
+        <span>Обратная связь</span>
+    </button>
+
+    <!-- Модальное окно обратной связи (упрощенное) -->
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-content">
+            <button class="close-button" id="closeModal">&times;</button>
+            
+            <div class="modal-header">
+                <h2 class="modal-title">Обратная связь</h2>
+                <p class="modal-subtitle">Заполните форму, чтобы связаться с разработчиком или подать заявку на добавление/редактирование магазина</p>
+            </div>
+            
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label class="form-label" for="formType">Тип обращения:</label>
+                    <select class="form-select" id="formType" name="formType" required>
+                        <option value="">Выберите тип обращения</option>
+                        <option value="new_shop">Добавление нового магазина</option>
+                        <option value="edit_shop">Редактирование существующего магазина</option>
+                        <option value="feedback">Обратная связь/предложение</option>
+                        <option value="error">Сообщение об ошибке</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="shopName">Название магазина:</label>
+                    <input type="text" class="form-input" id="shopName" name="shopName" placeholder="Введите название магазина">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="city">Город:</label>
+                    <input type="text" class="form-input" id="city" name="city" placeholder="Введите город">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="country">Страна:</label>
+                    <select class="form-select" id="country" name="country">
+                        <option value="">Выберите страну</option>
+                        <option value="Россия">Россия</option>
+                        <option value="Беларусь">Беларусь</option>
+                        <option value="Казахстан">Казахстан</option>
+                        <option value="Узбекистан">Узбекистан</option>
+                        <option value="другая">Другая страна</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="description">Сообщение:</label>
+                    <textarea class="form-textarea" id="description" name="description" placeholder="Ваше сообщение..." required></textarea>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="submit-button">Скопировать сообщение</button>
+                    <button type="button" class="cancel-button" id="cancelForm">Отмена</button>
+                </div>
+                
+                <p class="form-note">
+                    Сообщение будет скопировано в буфер обмена. Отправьте его одним из способов:
+                </p>
+                
+                <div class="contact-buttons">
+                    <a href="mailto:vsevolodzabaluev@yandex.ru?subject=Обратная связь с каталога магазинов ЕБИР" class="contact-button">
+                        <span>📧</span>
+                        <span>Написать на email: vsevolodzabaluev@yandex.ru</span>
+                    </a>
+                    <a href="https://vk.com/vsevolod_anadyrsky" target="_blank" class="contact-button">
+                        <span>👤</span>
+                        <span>Написать в ВК автора</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Подключаем файл с координатами городов -->
+    <script src="koordinat.js"></script>
+    
+    <!-- Подключаем функционал для кнопки "Расшифровка тегов" -->
+    <script src="tags-info.js"></script>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+    
+    <script>
+        let allShops = [];
+        let filteredShops = [];
+        let countries = new Set();
+        let cities = new Set();
+        let eras = new Set();
+        let specializations = new Set();
+        let map = null;
+        let cityMarkers = {};
+        
+        function initModals() {
+            // Модальное окно обратной связи
+            const feedbackButton = document.getElementById('feedbackButton');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const closeModal = document.getElementById('closeModal');
+            const cancelForm = document.getElementById('cancelForm');
+            const feedbackForm = document.getElementById('feedbackForm');
+            const formType = document.getElementById('formType');
+            
+            // Открыть модальное окно обратной связи
+            feedbackButton.addEventListener('click', () => {
+                feedbackModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // Закрыть модальное окно обратной связи
+            function closeFeedbackModal() {
+                feedbackModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            closeModal.addEventListener('click', closeFeedbackModal);
+            cancelForm.addEventListener('click', closeFeedbackModal);
+            
+            // Закрыть по клику вне окна
+            feedbackModal.addEventListener('click', (e) => {
+                if (e.target === feedbackModal) {
+                    closeFeedbackModal();
+                }
+            });
+            
+            // Динамическое изменение формы
+            formType.addEventListener('change', function() {
+                const shopNameField = document.getElementById('shopName');
+                const cityField = document.getElementById('city');
+                const countryField = document.getElementById('country');
+                
+                if (this.value === 'new_shop' || this.value === 'edit_shop') {
+                    shopNameField.required = true;
+                    cityField.required = true;
+                    countryField.required = true;
+                } else {
+                    shopNameField.required = false;
+                    cityField.required = false;
+                    countryField.required = false;
+                }
+            });
+            
+            // Обработка отправки формы обратной связи
+            feedbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    type: formType.value,
+                    shopName: document.getElementById('shopName').value,
+                    city: document.getElementById('city').value,
+                    country: document.getElementById('country').value,
+                    description: document.getElementById('description').value,
+                    timestamp: new Date().toLocaleString('ru-RU')
+                };
+                
+                const message = formatMessage(formData);
+                
+                // Копируем сообщение в буфер обмена
+                navigator.clipboard.writeText(message)
+                    .then(() => {
+                        showNotification('Сообщение скопировано в буфер обмена! Отправьте его на email или в ВК автора');
+                    })
+                    .catch(err => {
+                        console.error('Ошибка копирования: ', err);
+                        showNotification('Не удалось скопировать сообщение. Скопируйте текст вручную.');
+                        // Показываем сообщение для ручного копирования
+                        alert('Пожалуйста, скопируйте следующий текст и отправьте на email vsevolodzabaluev@yandex.ru или в ВК автора:\n\n' + message);
+                    });
+                
+                closeFeedbackModal();
+                feedbackForm.reset();
+            });
+        }
+        
+        function formatMessage(data) {
+            let message = `📋 Обращение из каталога магазинов ЕБИР\n\n`;
+            message += `📌 Тип: ${getTypeLabel(data.type)}\n`;
+            
+            if (data.shopName) {
+                message += `🛒 Название магазина: ${data.shopName}\n`;
+            }
+            
+            if (data.city) {
+                message += `📍 Город: ${data.city}\n`;
+            }
+            
+            if (data.country) {
+                message += `🌍 Страна: ${data.country}\n`;
+            }
+            
+            message += `\n📝 Сообщение:\n${data.description}\n\n`;
+            message += `⏰ Время отправки: ${data.timestamp}\n`;
+            message += `🔗 Ссылка на каталог: ${window.location.href}\n\n`;
+            message += `────────────────────────────────\n`;
+            message += `Отправьте это сообщение одним из способов:\n`;
+            message += `📧 Email: vsevolodzabaluev@yandex.ru\n`;
+            message += `👤 ВК автора: https://vk.com/vsevolod_anadyrsky`;
+            
+            return message;
+        }
+        
+        function getTypeLabel(type) {
+            const labels = {
+                'new_shop': 'Добавление нового магазина',
+                'edit_shop': 'Редактирование существующего магазина',
+                'feedback': 'Обратная связь/предложение',
+                'error': 'Сообщение об ошибке'
+            };
+            return labels[type] || type;
+        }
+        
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #e6a336, #d1891c);
+                color: #333;
+                padding: 15px 25px;
+                border-radius: 10px;
+                border: 2px solid #c17e1a;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                z-index: 1002;
+                font-weight: 600;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            notification.textContent = text;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+            
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        async function loadShopsData() {
+            try {
+                const response = await fetch('shops.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                allShops = data.shops;
+                
+                allShops.forEach(shop => {
+                    countries.add(shop.country);
+                    cities.add(shop.city);
+                    shop.eras.forEach(era => eras.add(era));
+                    if (shop.specialization) {
+                        // Разбиваем специализации по запятым и добавляем в Set
+                        const specs = shop.specialization.split(',').map(s => s.trim()).filter(s => s);
+                        specs.forEach(spec => specializations.add(spec));
+                    }
+                });
+                
+                initFilters();
+                initMap();
+                filteredShops = [...allShops];
+                displayShops(filteredShops);
+                updateStats();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                document.getElementById('shopsContainer').innerHTML = `
+                    <div class="no-results">
+                        <h3>Ошибка загрузки данных</h3>
+                        <p>Не удалось загрузить данные о магазинах. Проверьте наличие файла shops.json</p>
+                        <p>Можете начать с создания файла shops.json с примером данных:</p>
+                        <pre style="text-align: left; background: #fff8f0; padding: 10px; border-radius: 5px; margin-top: 10px;">
+{
+  "shops": [
+    {
+      "id": 1,
+      "name": "Пример магазина",
+      "city": "Москва",
+      "country": "Россия",
+      "eras": ["Средневековье", "XIII в."],
+      "description": "Описание магазина",
+      "specialization": "Доспехи, оружие, аксессуары",
+      "vk": "https://vk.com/shop",
+      "website": "https://shop.ru"
+    }
+  ]
+}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        function initMap() {
+            map = L.map('map').setView([55.7558, 37.6176], 4);
+            map.attributionControl.remove();
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(map);
+            
+            L.control.zoom({
+                position: 'topright'
+            }).addTo(map);
+            
+            addCityMarkers();
+            
+            document.getElementById('cityFilter').addEventListener('change', function() {
+                const selectedCity = this.value;
+                if (selectedCity) {
+                    centerMapOnCity(selectedCity);
+                }
+            });
+        }
+        
+        function centerMapOnCity(city) {
+            const cityCoord = getCityCoordinates(city);
+            if (cityCoord && map) {
+                map.setView(cityCoord, 12);
+                
+                if (cityMarkers[city]) {
+                    setTimeout(() => {
+                        cityMarkers[city].openPopup();
+                    }, 500);
+                }
+            }
+        }
+        
+        function addCityMarkers() {
+            const shopsByCity = {};
+            allShops.forEach(shop => {
+                if (!shopsByCity[shop.city]) {
+                    shopsByCity[shop.city] = [];
+                }
+                shopsByCity[shop.city].push(shop);
+            });
+            
+            Object.keys(shopsByCity).forEach(city => {
+                const cityShops = shopsByCity[city];
+                const cityCoord = getCityCoordinates(city);
+                
+                if (cityCoord) {
+                    const shopCount = cityShops.length;
+                    
+                    const flagIcon = L.divIcon({
+                        className: 'flag-marker',
+                        html: `
+                            <div class="flag-marker">
+                                <div class="flag-pole"></div>
+                                <div class="flag-body">
+                                    <div class="flag-count">${shopCount}</div>
+                                </div>
+                            </div>
+                        `,
+                        iconSize: [40, 50],
+                        iconAnchor: [20, 50],
+                        popupAnchor: [0, -50]
+                    });
+                    
+                    const marker = L.marker(cityCoord, { icon: flagIcon }).addTo(map);
+                    
+                    const eras = new Set();
+                    const specsSet = new Set();
+                    const sampleShops = cityShops.slice(0, 3);
+                    
+                    cityShops.forEach(shop => {
+                        shop.eras.forEach(era => eras.add(era));
+                        if (shop.specialization) {
+                            const specs = shop.specialization.split(',').map(s => s.trim()).filter(s => s);
+                            specs.forEach(spec => specsSet.add(spec));
+                        }
+                    });
+                    
+                    const eraList = Array.from(eras).slice(0, 5).join(', ') + (eras.size > 5 ? '...' : '');
+                    const specList = Array.from(specsSet).slice(0, 5).join(', ') + (specsSet.size > 5 ? '...' : '');
+                    
+                    let shopList = '';
+                    sampleShops.forEach(shop => {
+                        shopList += `<div style="margin: 5px 0; padding: 5px; background: #ffe4c4; border-radius: 3px;">
+                            <strong>${shop.name}</strong>
+                            ${shop.specialization ? `<div><small>${shop.specialization}</small></div>` : ''}
+                        </div>`;
+                    });
+                    
+                    if (cityShops.length > 3) {
+                        shopList += `<div style="margin: 5px 0; color: #8b4513; font-style: italic;">... и еще ${cityShops.length - 3} магазинов</div>`;
+                    }
+                    
+                    marker.bindPopup(`
+                        <div style="min-width: 250px;">
+                            <h3 style="margin: 0 0 10px 0; color: #8b4513;">${city}</h3>
+                            <p><strong>Магазинов в городе:</strong> ${shopCount}</p>
+                            <p><strong>Исторические эпохи:</strong> ${eraList}</p>
+                            ${specsSet.size > 0 ? `<p><strong>Специализации:</strong> ${specList}</p>` : ''}
+                            ${shopCount > 0 ? `<p><strong>Примеры магазинов:</strong></p>${shopList}` : ''}
+                            <button onclick="selectCity('${city}')" style="
+                                background: linear-gradient(135deg, #e6a336, #d1891c);
+                                color: #333;
+                                border: none;
+                                padding: 8px 16px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-weight: bold;
+                                margin-top: 10px;
+                                width: 100%;
+                            ">
+                                Показать магазины (${shopCount})
+                            </button>
+                        </div>
+                    `);
+                    
+                    marker.on('click', function() {
+                        selectCity(city);
+                    });
+                    
+                    cityMarkers[city] = marker;
+                }
+            });
+        }
+        
+        function selectCity(city) {
+            document.getElementById('cityFilter').value = city;
+            applyFilters();
+            document.getElementById('stats').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function getCityCoordinates(city) {
+            // Используем координаты из отдельного файла koordinat.js
+            if (typeof cityCoordinates !== 'undefined' && cityCoordinates[city]) {
+                return cityCoordinates[city];
+            }
+            
+            console.warn(`Координаты для города "${city}" не найдены, используется приблизительное расположение`);
+            return [55.7558 + (Math.random() - 0.5) * 15, 37.6176 + (Math.random() - 0.5) * 30];
+        }
+        
+        function initFilters() {
+            const countryFilter = document.getElementById('countryFilter');
+            const cityFilter = document.getElementById('cityFilter');
+            const eraFilter = document.getElementById('eraFilter');
+            const specializationFilter = document.getElementById('specializationFilter');
+            const resetButton = document.getElementById('resetButton');
+            
+            Array.from(countries).sort().forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countryFilter.appendChild(option);
+            });
+            
+            Array.from(cities).sort().forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                cityFilter.appendChild(option);
+            });
+            
+            Array.from(eras).sort().forEach(era => {
+                const option = document.createElement('option');
+                option.value = era;
+                option.textContent = era;
+                eraFilter.appendChild(option);
+            });
+            
+            Array.from(specializations).sort().forEach(spec => {
+                const option = document.createElement('option');
+                option.value = spec;
+                option.textContent = spec;
+                specializationFilter.appendChild(option);
+            });
+            
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            countryFilter.addEventListener('change', applyFilters);
+            cityFilter.addEventListener('change', function() {
+                applyFilters();
+                const selectedCity = this.value;
+                if (selectedCity) {
+                    centerMapOnCity(selectedCity);
+                }
+            });
+            eraFilter.addEventListener('change', applyFilters);
+            specializationFilter.addEventListener('change', applyFilters);
+            
+            resetButton.addEventListener('click', resetFilters);
+        }
+        
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('countryFilter').value = '';
+            document.getElementById('cityFilter').value = '';
+            document.getElementById('eraFilter').value = '';
+            document.getElementById('specializationFilter').value = '';
+            
+            applyFilters();
+            
+            if (map) {
+                map.setView([55.7558, 37.6176], 4);
+            }
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCountry = document.getElementById('countryFilter').value;
+            const selectedCity = document.getElementById('cityFilter').value;
+            const selectedEra = document.getElementById('eraFilter').value;
+            const selectedSpecialization = document.getElementById('specializationFilter').value;
+            
+            filteredShops = allShops.filter(shop => {
+                // Поиск по названию, городу и специализации
+                const matchesSearch = searchTerm === '' || 
+                    shop.name.toLowerCase().includes(searchTerm) || 
+                    shop.city.toLowerCase().includes(searchTerm) ||
+                    (shop.specialization && shop.specialization.toLowerCase().includes(searchTerm));
+                
+                const matchesCountry = selectedCountry === '' || shop.country === selectedCountry;
+                const matchesCity = selectedCity === '' || shop.city === selectedCity;
+                const matchesEra = selectedEra === '' || shop.eras.includes(selectedEra);
+                
+                // Фильтр по специализации
+                const matchesSpecialization = selectedSpecialization === '' || 
+                    (shop.specialization && shop.specialization.toLowerCase().includes(selectedSpecialization.toLowerCase()));
+                
+                return matchesSearch && matchesCountry && matchesCity && matchesEra && matchesSpecialization;
+            });
+            
+            displayShops(filteredShops);
+            updateStats();
+        }
+        
+        function displayShops(shops) {
+            const container = document.getElementById('shopsContainer');
+            
+            if (shops.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h3>Магазины не найдены</h3>
+                        <p>Попробуйте изменить параметры поиска или фильтры</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            shops.forEach(shop => {
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                
+                const eraTags = shop.eras.map(era => 
+                    `<span class="era-tag">${era}</span>`
+                ).join('');
+                
+                card.innerHTML = `
+                    <div class="shop-header">
+                        <div class="shop-name">${shop.name}</div>
+                        <div class="shop-location" data-city="${shop.city}">
+                            <span>📍</span>
+                            <span>${shop.city}, ${shop.country}</span>
+                        </div>
+                    </div>
+                    <div class="shop-body">
+                        <div class="shop-field">
+                            <div class="field-label">🏰 Исторические эпохи:</div>
+                            <div class="eras-container">${eraTags}</div>
+                        </div>
+                        <div class="shop-field">
+                            <div class="field-label">📝 Описание:</div>
+                            <div>${shop.description}</div>
+                        </div>
+                        <div class="shop-field">
+                            <div class="field-label">🛠️ Специализация:</div>
+                            <div>${shop.specialization || 'Не указана'}</div>
+                        </div>
+                    </div>
+                    <div class="shop-footer">
+                        <div>
+                            ${shop.vk ? `<a href="${shop.vk}" target="_blank" class="vk-link">
+                                <span>VK</span>
+                                <span>→</span>
+                            </a>` : ''}
+                            ${shop.website ? `<a href="${shop.website}" target="_blank" class="website-link" style="margin-left: 10px;">
+                                <span>🌐</span>
+                                <span>Сайт</span>
+                            </a>` : ''}
+                        </div>
+                        <div class="shop-id">ID: ${shop.id}</div>
+                    </div>
+                `;
+                
+                const locationElement = card.querySelector('.shop-location');
+                locationElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const city = locationElement.dataset.city;
+                    selectCity(city);
+                });
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function updateStats() {
+            const statsElement = document.getElementById('stats');
+            const totalShopsElement = document.getElementById('totalShops');
+            
+            totalShopsElement.textContent = allShops.length;
+            
+            if (filteredShops.length === allShops.length) {
+                statsElement.innerHTML = `Показаны все <strong>${allShops.length}</strong> магазинов`;
+            } else {
+                const uniqueCities = new Set(filteredShops.map(shop => shop.city)).size;
+                const uniqueSpecializations = new Set(
+                    filteredShops
+                        .filter(shop => shop.specialization)
+                        .flatMap(shop => shop.specialization.split(',').map(s => s.trim()).filter(s => s))
+                ).size;
+                
+                statsElement.innerHTML = `
+                    Найдено <strong>${filteredShops.length}</strong> магазинов из <strong>${allShops.length}</strong>
+                    <br>
+                    <small>в <strong>${uniqueCities}</strong> городах, <strong>${uniqueSpecializations}</strong> специализаций</small>
+                `;
+            }
+        }
+        
+        function setCurrentDate() {
+            const now = new Date();
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const formattedDate = now.toLocaleDateString('ru-RU', options);
+            document.getElementById('currentDate').textContent = formattedDate;
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setCurrentDate();
+            initModals();
+            loadShopsData();
+            
+            // Загружаем навигационный модуль
+            loadNavigationModule();
+        });
+        
+        // Функция загрузки навигационного модуля
+        function loadNavigationModule() {
+            fetch('navigation-module.html')
+                .then(response => {
+                    if (!response.ok) throw new Error('Не удалось загрузить модуль навигации');
+                    return response.text();
+                })
+                .then(html => {
+                    // Вставляем модуль в начало body
+                    document.body.insertAdjacentHTML('afterbegin', html);
+                    
+                    // JavaScript уже встроен в HTML, он выполнится автоматически
+                    // после вставки HTML в DOM
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки навигации:', error);
+                    // Создаем резервную кнопку "На главную"
+                    const backupButton = document.createElement('a');
+                    backupButton.href = 'index.html';
+                    backupButton.className = 'home-button';
+                    backupButton.innerHTML = '<span>🏠</span><span>На главную</span>';
+                    backupButton.style.cssText = `
+                        position: fixed;
+                        bottom: 100px;
+                        right: 30px;
+                        z-index: 999;
+                        background: linear-gradient(135deg, #e6a336, #d1891c);
+                        color: #333;
+                        padding: 12px 20px;
+                        border-radius: 50px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        border: 2px solid #c17e1a;
+                        box-shadow: 0 5px 20px rgba(139, 69, 19, 0.4);
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        transition: all 0.3s;
+                    `;
+                    backupButton.addEventListener('mouseenter', () => {
+                        backupButton.style.transform = 'translateY(-3px)';
+                        backupButton.style.boxShadow = '0 8px 25px rgba(139, 69, 19, 0.5)';
+                    });
+                    backupButton.addEventListener('mouseleave', () => {
+                        backupButton.style.transform = 'translateY(0)';
+                        backupButton.style.boxShadow = '0 5px 20px rgba(139, 69, 19, 0.4)';
+                    });
+                    document.body.appendChild(backupButton);
+                });
+        }
+    </script>
+</body>
+</html>

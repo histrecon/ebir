@@ -1,0 +1,48 @@
+{
+  "shops": [
+    {
+      "id": 1,
+      "name": "Драккар |Средневековая мастерская|",
+      "city": "Воронеж",
+      "country": "Россия",
+      "eras": ["Средневековье"],
+      "description": "Магазин реконструкторского товара из Воронежа",
+      "specialization": "текстиль, вязание, шитье, литье, кожа",
+      "vk": "https://vk.com/drakkar36",
+      "website": ""
+    },
+    {
+      "id": 2,
+      "name": "Кузница Мурома",
+      "city": "Муром",
+      "country": "Россия",
+      "eras": ["Средневековье"],
+      "description": "Магазин кузнечных изделий из Мурома",
+      "specialization": "литье, ковка",
+      "vk": "https://vk.com/drakkar36",
+      "website": ""
+    },
+    {
+      "id": 3,
+      "name": "Мастерская •BalØrn•",
+      "city": "без адреса",
+      "country": "Россия",
+      "eras": ["Средневековье"],
+      "description": "Магазин кожных изделий",
+      "specialization": "кожа",
+      "vk": "https://vk.com/balorn",
+      "website": ""
+    },
+    {
+      "id": 4,
+      "name": "Lesna Tropa | Натуральные ткани",
+      "city": "без адреса",
+      "country": "Россия",
+      "eras": ["Средневековье"],
+      "description": "Магазин тканей и палаток",
+      "specialization": "текстиль",
+      "vk": "https://vk.com/tkani_lesnatropa",
+      "website": ""
+    }	
+  ]
+}
