@@ -26,6 +26,7 @@
             line-height: 1.6;
             color: #333;
             padding: 20px;
+            /* Фон - текстура каштановые доски из файла fon.jpg */
             background-image: url('fon.jpg');
             background-size: cover;
             background-attachment: fixed;
@@ -33,6 +34,7 @@
             min-height: 100vh;
         }
         
+        /* Затемнение фона для лучшей читаемости */
         body::before {
             content: '';
             position: fixed;
@@ -50,6 +52,7 @@
             position: relative;
         }
         
+        /* Кнопка обратной связи */
         .feedback-button {
             position: fixed;
             bottom: 30px;
@@ -81,6 +84,7 @@
             transform: translateY(-1px);
         }
         
+        /* Модальное окно */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -169,6 +173,7 @@
             background: rgba(139, 69, 19, 0.1);
         }
         
+        /* Форма */
         .form-group {
             margin-bottom: 20px;
         }
@@ -279,6 +284,7 @@
             display: inline-block;
         }
         
+        /* Стили для контейнера с контактами */
         .contact-buttons {
             display: flex;
             flex-direction: column;
@@ -419,6 +425,7 @@
             background: rgba(255, 252, 248, 0.95);
         }
         
+        /* Кнопка информации о тегах */
         .tags-info-button {
             padding: 14px 18px;
             border: 2px solid #d4a574;
@@ -444,6 +451,7 @@
             transform: translateY(0);
         }
         
+        /* Модальное окно для расшифровки тегов */
         .tags-modal {
             max-width: 800px;
             max-height: 80vh;
@@ -670,7 +678,7 @@
             font-weight: 600;
             border: 1px solid #d4a574;
         }
-        
+             
         .festival-footer {
             padding: 20px 25px;
             background-color: #f5ebd8;
@@ -800,6 +808,8 @@
             border-color: #e6a336;
             transform: translateY(-2px);
         }
+        
+        /* Убраны стили для старой кнопки home-button */
         
         @media (max-width: 768px) {
             .festivals-container {
@@ -932,6 +942,8 @@
 </head>
 <body>
     <div class="container">
+        <!-- УДАЛЕНА СТАРАЯ КНОПКА "НА ГЛАВНУЮ" -->
+        
         <header>
             <h1>Каталог фестивалей ЕБИР</h1>
             <p class="subtitle">Каталог активно пополняется. Если вы хотите добавить информацию о уже внесенном фестивале/турнире или о котором еще нет информации пишите в обратную связь.</p>
@@ -994,6 +1006,7 @@
         <span>Обратная связь</span>
     </button>
 
+    <!-- Модальное окно обратной связи (упрощенное) -->
     <div class="modal-overlay" id="feedbackModal">
         <div class="modal-content">
             <button class="close-button" id="closeModal">&times;</button>
@@ -1065,7 +1078,10 @@
         </div>
     </div>
 
+    <!-- Подключаем файл с координатами городов -->
     <script src="koordinat.js"></script>
+    
+    <!-- Подключаем функционал для кнопки "Расшифровка тегов" -->
     <script src="tags-info.js"></script>
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -1082,6 +1098,7 @@
         let cityMarkers = {};
         
         function initModals() {
+            // Модальное окно обратной связи
             const feedbackButton = document.getElementById('feedbackButton');
             const feedbackModal = document.getElementById('feedbackModal');
             const closeModal = document.getElementById('closeModal');
@@ -1089,11 +1106,13 @@
             const feedbackForm = document.getElementById('feedbackForm');
             const formType = document.getElementById('formType');
             
+            // Открыть модальное окно обратной связи
             feedbackButton.addEventListener('click', () => {
                 feedbackModal.classList.add('active');
                 document.body.style.overflow = 'hidden';
             });
             
+            // Закрыть модальное окно обратной связи
             function closeFeedbackModal() {
                 feedbackModal.classList.remove('active');
                 document.body.style.overflow = '';
@@ -1102,12 +1121,14 @@
             closeModal.addEventListener('click', closeFeedbackModal);
             cancelForm.addEventListener('click', closeFeedbackModal);
             
+            // Закрыть по клику вне окна
             feedbackModal.addEventListener('click', (e) => {
                 if (e.target === feedbackModal) {
                     closeFeedbackModal();
                 }
             });
             
+            // Динамическое изменение формы
             formType.addEventListener('change', function() {
                 const festivalNameField = document.getElementById('festivalName');
                 const cityField = document.getElementById('city');
@@ -1124,6 +1145,7 @@
                 }
             });
             
+            // Обработка отправки формы обратной связи
             feedbackForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -1138,6 +1160,7 @@
                 
                 const message = formatMessage(formData);
                 
+                // Копируем сообщение в буфер обмена
                 navigator.clipboard.writeText(message)
                     .then(() => {
                         showNotification('Сообщение скопировано в буфер обмена! Отправьте его на email или в ВК автора');
@@ -1145,6 +1168,7 @@
                     .catch(err => {
                         console.error('Ошибка копирования: ', err);
                         showNotification('Не удалось скопировать сообщение. Скопируйте текст вручную.');
+                        // Показываем сообщение для ручного копирования
                         alert('Пожалуйста, скопируйте следующий текст и отправьте на email vsevolodzabaluev@yandex.ru или в ВК автора:\n\n' + message);
                     });
                 
@@ -1282,6 +1306,8 @@
       "name": "Пример фестиваля",
       "city": "Москва",
       "country": "Россия",
+      "year": 2024,
+      "date": "15-18 августа",
       "eras": ["Средневековье", "XIII в."],
       "description": "Описание фестиваля",
       "vk": "https://vk.com/festival",
@@ -1363,18 +1389,21 @@
                     const marker = L.marker(cityCoord, { icon: flagIcon }).addTo(map);
                     
                     const eras = new Set();
+                    const yearsSet = new Set();
                     const sampleFestivals = cityFestivals.slice(0, 3);
                     
                     cityFestivals.forEach(festival => {
                         festival.eras.forEach(era => eras.add(era));
+                        yearsSet.add(festival.year);
                     });
                     
                     const eraList = Array.from(eras).slice(0, 5).join(', ') + (eras.size > 5 ? '...' : '');
+                    const yearList = Array.from(yearsSet).sort().slice(0, 3).join(', ') + (yearsSet.size > 3 ? '...' : '');
                     
                     let festivalList = '';
                     sampleFestivals.forEach(festival => {
                         festivalList += `<div style="margin: 5px 0; padding: 5px; background: #ffe4c4; border-radius: 3px;">
-                            <strong>${festival.name}</strong>
+                            <strong>${festival.name}</strong> (${festival.year})
                         </div>`;
                     });
                     
@@ -1386,6 +1415,7 @@
                         <div style="min-width: 250px;">
                             <h3 style="margin: 0 0 10px 0; color: #8b4513;">${city}</h3>
                             <p><strong>Фестивалей в городе:</strong> ${festivalCount}</p>
+                            <p><strong>Годы проведения:</strong> ${yearList}</p>
                             <p><strong>Исторические эпохи:</strong> ${eraList}</p>
                             ${festivalCount > 0 ? `<p><strong>Примеры фестивалей:</strong></p>${festivalList}` : ''}
                             <button onclick="selectCity('${city}')" style="
@@ -1420,6 +1450,7 @@
         }
         
         function getCityCoordinates(city) {
+            // Используем координаты из отдельного файла koordinat.js
             if (typeof cityCoordinates !== 'undefined' && cityCoordinates[city]) {
                 return cityCoordinates[city];
             }
@@ -1601,9 +1632,11 @@
             initModals();
             loadFestivalsData();
             
+            // Загружаем навигационный модуль
             loadNavigationModule();
         });
         
+        // Функция загрузки навигационного модуля
         function loadNavigationModule() {
             fetch('navigation-module.html')
                 .then(response => {
@@ -1611,10 +1644,15 @@
                     return response.text();
                 })
                 .then(html => {
+                    // Вставляем модуль в начало body
                     document.body.insertAdjacentHTML('afterbegin', html);
+                    
+                    // JavaScript уже встроен в HTML, он выполнится автоматически
+                    // после вставки HTML в DOM
                 })
                 .catch(error => {
                     console.error('Ошибка загрузки навигации:', error);
+                    // Создаем резервную кнопку "На главную"
                     const backupButton = document.createElement('a');
                     backupButton.href = 'index.html';
                     backupButton.className = 'home-button';
