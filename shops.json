@@ -36,7 +36,7 @@
     {
       "id": 4,
       "name": "Lesna Tropa | Натуральные ткани",
-      "city": "Нет точного адреса",
+      "city": "Люберцы",
       "country": "Россия",
       "eras": ["Мультивек", "Ролевка"],
       "description": "Магазин тканей",
@@ -87,6 +87,17 @@
       "specialization": "обувное дело, кожгалантерея",
       "vk": "https://vk.ru/kozlab.shop",
       "website": ""
-    }	 
+    },
+    {
+      "id": 9,
+      "name": "BRENNSKIP",
+      "city": "Благовещенск",
+      "country": "Россия",
+      "eras": ["", ""],
+      "description": "",
+      "specialization": "",
+      "vk": "https://vk.ru/brennskip",
+      "website": ""
+    } 
   ]
 }
