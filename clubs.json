@@ -3185,6 +3185,15 @@
       "eras": ["XVII в.", "XVIII в.", "Эпоха Петра I"],
       "vk": "https://vk.ru/altairekon",
       "description": "Клуб исторической реконструкции в Бийске"
+	},
+     {
+      "id": 355,
+      "name": "КИРиФ «Gothic»",
+      "city": "Москва",
+      "country": "Россия",
+      "eras": ["XIV в.", "XV в.", "XVI в.", "XVII в.", "Средневековье", "Ролевка", "HEMA"],
+      "vk": "https://vk.ru/gothic_reenactment",
+      "description": "Клуб исторической реконструкции в Москве"
 	}
   ]
 }
