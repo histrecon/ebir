@@ -3658,6 +3658,16 @@
       "vk": "https://vk.ru/ur_rk_rl",
 	  "website": "",
       "description": "Клуб исторической реконструкции и ролевых игр в Геленджике"
+	},
+     {
+      "id": 367,
+      "name": "Поздний Рим - Coh III Quartodecimani",
+      "city": "Москва",
+      "country": "Россия",
+      "eras": ["IV в.", "Древний Рим"],
+      "vk": "https://vk.ru/laterome",
+	  "website": "",
+      "description": "Клуб исторической реконструкции в Москве"
 	}	 
   ]
 }
