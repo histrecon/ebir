@@ -1,989 +1,1105 @@
-// catalog-module.js - Единый модуль для страниц каталога
-// Версия 3.4 — поиск по описанию, центрирование карты на регионе
+/* ============================================================
+   catalog-styles.css — Единый стиль для ЕБИР
+   Версия 3.7 — добавлен чекбокс "Искать в описаниях"
+   ============================================================ */
 
-(function() {
-    'use strict';
+/* ============================================================
+   1. ПЕРЕМЕННЫЕ
+   ============================================================ */
 
-    // ============================================================
-    // КОНФИГУРАЦИЯ
-    // ============================================================
+:root {
+    --color-bg: #f5ebd8;
+    --color-bg-card: #fef9f3;
+    --color-border: #d4a574;
+    --color-border-dark: #c4905a;
+    --color-gold: #e6a336;
+    --color-gold-dark: #d1891c;
+    --color-gold-darker: #b8731a;
+    --color-brown: #8b4513;
+    --color-brown-light: #8b7355;
+    --color-text: #333;
+    --color-text-light: #4a3f35;
+    --color-text-muted: #888;
+    --color-white: #f5ebd8;
+    --radius: 10px;
+    --radius-lg: 15px;
+    --radius-xl: 20px;
+    --shadow: 0 8px 32px rgba(139, 69, 19, 0.3);
+    --shadow-sm: 0 6px 20px rgba(139, 69, 19, 0.2);
+    --transition: 0.3s ease;
+}
 
-    const CONFIG = {
-        types: {
-            clubs: {
-                dataFile: 'clubs.json',
-                containerId: 'clubsContainer',
-                statsId: 'stats',
-                totalId: 'totalClubs',
-                cardClass: 'club-card',
-                headerClass: 'club-header',
-                nameClass: 'club-name',
-                locationClass: 'club-location',
-                bodyClass: 'club-body',
-                fieldClass: 'club-field',
-                descriptionWrapperClass: 'club-description-wrapper',
-                descriptionTextClass: 'club-description-text',
-                descriptionFadeClass: 'club-description-fade',
-                readMoreBtnClass: 'club-read-more-btn',
-                footerClass: 'club-footer',
-                linksClass: 'club-footer-links',
-                vkLinkClass: 'vk-link',
-                websiteLinkClass: 'website-link',
-                idClass: 'club-id',
-                eraTagClass: 'era-tag',
-                fieldLabelClass: 'field-label',
-                erasContainerClass: 'eras-container',
-                dataKey: 'clubs',
-                itemName: 'клубов',
-                itemNameSingular: 'клуб',
-                emptyMessage: 'Клубы не найдены'
-            },
-            festivals: {
-                dataFile: 'festivals.json',
-                containerId: 'festivalsContainer',
-                statsId: 'stats',
-                totalId: 'totalFestivals',
-                cardClass: 'festival-card',
-                headerClass: 'festival-header',
-                nameClass: 'festival-name',
-                locationClass: 'festival-location',
-                bodyClass: 'festival-body',
-                fieldClass: 'festival-field',
-                descriptionWrapperClass: 'festival-description-wrapper',
-                descriptionTextClass: 'festival-description-text',
-                descriptionFadeClass: 'festival-description-fade',
-                readMoreBtnClass: 'festival-read-more-btn',
-                footerClass: 'festival-footer',
-                linksClass: 'festival-footer-links',
-                vkLinkClass: 'vk-link',
-                websiteLinkClass: 'website-link',
-                idClass: 'festival-id',
-                eraTagClass: 'era-tag',
-                fieldLabelClass: 'field-label',
-                erasContainerClass: 'eras-container',
-                dataKey: 'festivals',
-                itemName: 'мероприятий',
-                itemNameSingular: 'мероприятие',
-                emptyMessage: 'Мероприятия не найдены'
-            },
-            shops: {
-                dataFile: 'shops.json',
-                containerId: 'shopsContainer',
-                statsId: 'stats',
-                totalId: 'totalShops',
-                cardClass: 'shop-card',
-                headerClass: 'shop-header',
-                nameClass: 'shop-name',
-                locationClass: 'shop-location',
-                bodyClass: 'shop-body',
-                fieldClass: 'shop-field',
-                descriptionWrapperClass: 'shop-description-wrapper',
-                descriptionTextClass: 'shop-description-text',
-                descriptionFadeClass: 'shop-description-fade',
-                readMoreBtnClass: 'shop-description-btn',
-                footerClass: 'shop-footer',
-                linksClass: 'shop-footer-links',
-                vkLinkClass: 'vk-link',
-                websiteLinkClass: 'website-link',
-                idClass: 'shop-id',
-                eraTagClass: 'era-tag',
-                fieldLabelClass: 'field-label',
-                erasContainerClass: 'eras-container',
-                dataKey: 'shops',
-                itemName: 'магазинов',
-                itemNameSingular: 'магазин',
-                emptyMessage: 'Магазины не найдены'
-            }
-        },
-        map: {
-            defaultCenter: [55.7558, 37.6176],
-            defaultZoom: 4,
-            cityZoom: 12
-        },
-        truncate: {
-            maxLength: 40
-        }
-    };
 
-    // ============================================================
-    // СОСТОЯНИЕ
-    // ============================================================
+/* ============================================================
+   2. БАЗА
+   ============================================================ */
 
-    let state = {
-        type: null,
-        allItems: [],
-        filteredItems: [],
-        countries: new Set(),
-        regions: new Set(),
-        cities: new Set(),
-        eras: new Set(),
-        specializations: new Set(),
-        map: null,
-        cityMarkers: {},
-        config: null
-    };
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-    // ============================================================
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // ============================================================
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--color-text);
+    padding: 20px;
+    min-height: 100vh;
+    background: url('fon.jpg') center/cover fixed;
+}
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 20, 10, 0.7);
+    z-index: -1;
+}
 
-    function getCatalogType() {
-        const path = window.location.pathname.split('/').pop() || '';
-        if (path.includes('clubs')) return 'clubs';
-        if (path.includes('festivals')) return 'festivals';
-        if (path.includes('shops')) return 'shops';
-        return null;
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 70px;
+}
+
+/* УМЕНЬШЕННЫЕ ОТСТУПЫ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+@media (max-width: 768px) {
+    .container {
+        padding-top: 70px;
     }
+}
 
-    function getConfig() {
-        const type = getCatalogType();
-        if (!type || !CONFIG.types[type]) {
-            console.error('Неизвестный тип каталога:', type);
-            return null;
-        }
-        return CONFIG.types[type];
+@media (max-width: 480px) {
+    .container {
+        padding-top: 65px;
+        padding-left: 4px;
+        padding-right: 4px;
     }
-
-    function hasCityCoordinates() {
-        return typeof cityCoordinates !== 'undefined';
+    body {
+        padding: 8px;
     }
+}
 
-    function getCityCoordinates(city) {
-        if (hasCityCoordinates() && cityCoordinates[city]) {
-            return cityCoordinates[city];
-        }
-        return [55.7558 + (Math.random() - 0.5) * 15, 37.6176 + (Math.random() - 0.5) * 30];
+@media (max-width: 380px) {
+    .container {
+        padding-top: 60px;
     }
+}
 
-    function getItemRegion(city) {
-        if (typeof cityRegions !== 'undefined' && cityRegions[city]) {
-            return cityRegions[city];
-        }
-        return 'Не указан';
+
+/* ============================================================
+   3. ШАПКА
+   ============================================================ */
+
+header {
+    text-align: center;
+    padding: 35px 30px;
+    margin-bottom: 35px;
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--color-gold), var(--color-gold-dark), var(--color-gold), transparent);
+}
+
+/* ЛОГОТИП В ШАПКЕ — УВЕЛИЧЕН */
+.header-logo {
+    width: auto;
+    height: 180px;
+    max-width: 95%;
+    object-fit: contain;
+    margin: 0 auto 18px;
+    display: block;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+    transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+    transform: scale(1.03);
+}
+
+/* Старая иконка (оставлена на всякий случай, если где-то ещё используется) */
+.header-icon { font-size: 3.5rem; display: block; margin-bottom: 8px; }
+
+h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1.2;
+    color: #2c1810;
+    margin-bottom: 12px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #5a4a3a;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+    header { 
+        padding: 22px 18px; 
+        margin-bottom: 22px; 
+        border-radius: var(--radius-lg); 
     }
-
-    window.setCurrentDate = function() {
-        const now = new Date();
-        const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        const formattedDate = now.toLocaleDateString('ru-RU', options);
-        const el = document.getElementById('currentDate');
-        if (el) el.textContent = formattedDate;
-    };
-
-    function getSearchTerm() {
-        const input = document.getElementById('searchInput');
-        return input ? input.value.toLowerCase().trim() : '';
+    .header-logo {
+        height: 140px;
+        margin-bottom: 14px;
     }
+    .header-icon { font-size: 2.8rem; }
+    h1 { font-size: 1.8rem; }
+    .subtitle { font-size: 0.95rem; line-height: 1.6; }
+}
 
-    // <-- НОВОЕ: проверяем, включён ли поиск по описаниям
-    function isSearchInDescriptionEnabled() {
-        const checkbox = document.getElementById('searchInDescription');
-        return checkbox ? checkbox.checked : true;
+@media (max-width: 480px) {
+    header { 
+        padding: 16px 12px; 
+        margin-bottom: 16px; 
+        border-radius: 12px; 
     }
-
-    function getFilterValue(id) {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
+    .header-logo {
+        height: 110px;
+        margin-bottom: 12px;
     }
+    .header-icon { font-size: 2.2rem; margin-bottom: 6px; }
+    h1 { font-size: 1.4rem; margin-bottom: 8px; }
+    .subtitle { font-size: 0.85rem; line-height: 1.5; }
+}
 
-    function renderEraTags(eras, eraTagClass) {
-        if (!eras || eras.length === 0) return '<span style="color: #8b7355;">Не указано</span>';
-        return eras.map(era =>
-            `<span class="${eraTagClass}">${era}</span>`
-        ).join('');
+@media (max-width: 380px) {
+    .header-logo {
+        height: 90px;
+        margin-bottom: 10px;
     }
+}
 
-    function needsTruncate(text) {
-        return text && text.length > CONFIG.truncate.maxLength;
+
+/* ============================================================
+   4. ПОДВАЛ
+   ============================================================ */
+
+.footer {
+    text-align: center;
+    padding: 25px 20px;
+    margin-top: 35px;
+    color: var(--color-white);
+    background: rgba(30, 20, 10, 0.85);
+    border-radius: 16px;
+    border-top: 2px solid var(--color-border);
+    backdrop-filter: blur(4px);
+}
+.footer-notice {
+    margin: 10px 0;
+    padding: 6px 10px;
+    color: #d4c4b4;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+.author-links {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.author-link {
+    color: var(--color-gold);
+    text-decoration: none;
+    padding: 6px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: rgba(139, 69, 19, 0.15);
+    transition: all var(--transition);
+}
+.author-link:hover {
+    background: rgba(230, 163, 54, 0.2);
+    color: #ffcc66;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .footer { padding: 18px 15px; border-radius: 12px; margin-top: 25px; font-size: 0.85rem; }
+    .author-links { flex-direction: column; gap: 8px; align-items: center; }
+}
+@media (max-width: 480px) {
+    .footer { padding: 14px 12px; font-size: 0.75rem; border-radius: 10px; }
+    .footer-notice { font-size: 0.7rem; padding: 4px 8px; }
+    .author-link { font-size: 0.75rem; padding: 5px 12px; }
+}
+
+
+/* ============================================================
+   5. СТРАНИЦА ПРЕДЛОЖКИ
+   ============================================================ */
+
+.feedback-card {
+    background: var(--color-bg-card);
+    padding: 40px;
+    margin-top: 20px;
+    border-radius: var(--radius-xl);
+    border: 3px solid var(--color-border);
+    box-shadow: 0 10px 40px rgba(139, 69, 19, 0.4);
+}
+.feedback-header {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--color-border);
+}
+.feedback-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+.feedback-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    color: var(--color-text);
+}
+.feedback-subtitle {
+    color: #555;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Формы */
+.form-group { margin-bottom: 22px; }
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--color-brown);
+    font-size: 1.05rem;
+}
+.form-label .required { color: #c33; margin-left: 2px; }
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    background: rgba(255, 248, 240, 0.9);
+    font-size: 1rem;
+    color: var(--color-text);
+    font-family: inherit;
+    transition: all var(--transition);
+}
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+    background: rgba(255, 252, 248, 0.95);
+    outline: none;
+}
+.form-textarea { min-height: 120px; resize: vertical; }
+.form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b4513' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+    padding-right: 45px;
+}
+.form-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+.conditional-fields {
+    display: none;
+    padding: 15px;
+    margin-top: 5px;
+    background: rgba(255, 248, 240, 0.5);
+    border-radius: var(--radius);
+    border: 1px dashed var(--color-border);
+}
+.conditional-fields.active { display: block; }
+
+.form-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+.submit-button,
+.cancel-button {
+    flex: 1;
+    padding: 15px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
+    transition: all var(--transition);
+}
+.submit-button {
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    color: var(--color-text);
+    border: 2px solid #c17e1a;
+    cursor: pointer;
+}
+.submit-button:hover {
+    background: linear-gradient(135deg, var(--color-gold-dark), var(--color-gold-darker));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+}
+.cancel-button {
+    background: rgba(139, 69, 19, 0.1);
+    color: var(--color-brown);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cancel-button:hover { background: rgba(139, 69, 19, 0.2); }
+
+.form-note {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 228, 196, 0.3);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    text-align: center;
+}
+.form-note p { color: #555; font-size: 0.95rem; margin-bottom: 10px; }
+
+.contact-links {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    border: 1px solid #c17e1a;
+    transition: all var(--transition);
+}
+.contact-link:hover {
+    background: linear-gradient(135deg, var(--color-gold-dark), var(--color-gold-darker));
+    transform: translateY(-2px);
+}
+.contact-link.email {
+    background: linear-gradient(135deg, #36aee6, #1c6dd1);
+    border-color: #1a5cc1;
+    color: #fff;
+}
+.contact-link.email:hover {
+    background: linear-gradient(135deg, #1c6dd1, #1a5cb8);
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    padding: 15px 25px;
+    max-width: 400px;
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    color: var(--color-text);
+    border: 2px solid #c17e1a;
+    border-radius: var(--radius);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    z-index: 1002;
+    font-weight: 600;
+    animation: slideIn 0.3s ease-out;
+}
+.notification.error {
+    background: linear-gradient(135deg, #e63636, #cc1c1c);
+    border-color: #aa1a1a;
+    color: #fff;
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Адаптив предложки */
+@media (max-width: 768px) {
+    .feedback-card { padding: 25px; margin-top: 10px; border-radius: var(--radius-lg); }
+    .feedback-title { font-size: 1.8rem; }
+    .feedback-subtitle { font-size: 1rem; }
+    .feedback-icon { font-size: 2.5rem; }
+    .form-buttons { flex-direction: column; }
+    .contact-links { flex-direction: column; align-items: stretch; }
+    .contact-link { justify-content: center; }
+    .notification { right: 10px; left: 10px; max-width: none; top: 100px; }
+}
+@media (max-width: 480px) {
+    .feedback-card { padding: 18px 15px; border-radius: 12px; }
+    .feedback-title { font-size: 1.5rem; }
+    .feedback-subtitle { font-size: 0.9rem; }
+    .feedback-icon { font-size: 2rem; }
+    .form-input, .form-textarea, .form-select { padding: 10px 12px; font-size: 0.9rem; }
+    .submit-button, .cancel-button { padding: 12px; font-size: 1rem; }
+    .notification { font-size: 0.85rem; padding: 10px 15px; top: 95px; }
+}
+
+
+/* ============================================================
+   6. КАТАЛОГ: УПРАВЛЕНИЕ + КАРТА + СТАТИСТИКА
+   ============================================================ */
+
+/* Управление (поиск + фильтры) */
+.controls {
+    padding: 25px;
+    margin-bottom: 30px;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+.controls { display: flex; flex-direction: column; gap: 20px; }
+
+.search-box input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    background: rgba(255, 248, 240, 0.9);
+    font-size: 1rem;
+    color: var(--color-text);
+    transition: all var(--transition);
+}
+.search-box input:focus {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+    outline: none;
+}
+.search-box input::placeholder { color: #8b7355; }
+
+/* ============================================================
+   ЧЕКБОКС "ИСКАТЬ В ОПИСАНИЯХ"
+   ============================================================ */
+
+.search-box {
+    position: relative;
+}
+
+.search-description-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 6px 14px;
+    background: rgba(255, 248, 240, 0.75);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    user-select: none;
+    transition: all var(--transition);
+    font-weight: 400;
+}
+
+.search-description-toggle:hover {
+    background: rgba(255, 248, 240, 1);
+    border-color: var(--color-gold);
+    color: var(--color-brown);
+}
+
+.search-description-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-gold-dark);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.search-description-toggle input[type="checkbox"]:checked ~ span {
+    font-weight: 600;
+    color: var(--color-brown);
+}
+
+.search-description-toggle:has(input:checked) {
+    background: rgba(230, 163, 54, 0.15);
+    border-color: var(--color-gold);
+}
+
+@media (max-width: 480px) {
+    .search-description-toggle {
+        font-size: 0.78rem;
+        padding: 5px 11px;
+        gap: 6px;
     }
-
-    function renderDescription(text, wrapperClass, textClass, fadeClass, btnClass, itemId) {
-        if (!text) text = 'Описание отсутствует';
-        const needsTrunc = needsTruncate(text);
-
-        return `
-            <div class="${wrapperClass} ${needsTrunc ? '' : 'expanded'}">
-                <div class="${textClass}">${text}</div>
-                ${needsTrunc ? `<div class="${fadeClass}"></div>` : ''}
-            </div>
-            ${needsTrunc ? `<button class="${btnClass}" data-item-id="${itemId}">Читать далее ▼</button>` : ''}
-        `;
+    .search-description-toggle input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
     }
+}
 
-    function renderFooterLinks(vk, website, vkClass, websiteClass) {
-        let html = '';
-        if (vk) {
-            html += `<a href="${vk}" target="_blank" class="${vkClass}">
-                <span>VK</span>
-                <span>→</span>
-            </a>`;
-        }
-        if (website) {
-            html += `<a href="${website}" target="_blank" class="${websiteClass}">
-                <span>🌐</span>
-                <span>Сайт</span>
-            </a>`;
-        }
-        return html;
+
+/* ============================================================
+   ФИЛЬТРЫ
+   ============================================================ */
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.filters select {
+    padding: 14px 18px;
+    min-width: 180px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    background: rgba(255, 248, 240, 0.9);
+    font-size: 1rem;
+    color: var(--color-text);
+    transition: all var(--transition);
+}
+.filters select:focus {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(230, 163, 54, 0.3);
+    outline: none;
+}
+
+.tags-info-button {
+    padding: 14px 18px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all var(--transition);
+}
+.tags-info-button:hover {
+    background: linear-gradient(135deg, var(--color-gold-dark), var(--color-gold-darker));
+    transform: translateY(-2px);
+}
+
+.reset-button {
+    padding: 14px 18px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    background: rgba(255, 248, 240, 0.9);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.reset-button:hover {
+    background: #ffe4c4;
+    border-color: var(--color-gold);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .controls { padding: 15px; gap: 12px; }
+    .filters { flex-direction: column; align-items: stretch; gap: 8px; }
+    .filters select,
+    .tags-info-button,
+    .reset-button {
+        width: 100%;
+        min-width: auto;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        height: 44px;
     }
-
-    // ============================================================
-    // СОЗДАНИЕ КАРТОЧКИ
-    // ============================================================
-
-    function createItemCard(item, index) {
-        const config = state.config;
-        const card = document.createElement('div');
-        card.className = config.cardClass;
-
-        const eraTags = item.eras ? renderEraTags(item.eras, config.eraTagClass) : '';
-        const description = item.description || 'Описание отсутствует';
-        const needsDescTruncate = needsTruncate(description);
-
-        const itemRegion = getItemRegion(item.city);
-
-        let bodyContent = '';
-
-        if (state.type === 'shops' && item.specialization) {
-            const spec = item.specialization;
-            const needsSpecTruncate = needsTruncate(spec);
-            bodyContent += `
-                <div class="${config.fieldClass}">
-                    <div class="${config.fieldLabelClass}">🛠️ Специализация:</div>
-                    <div class="shop-specialization-wrapper ${needsSpecTruncate ? '' : 'expanded'}">
-                        <div class="shop-specialization-text">${spec}</div>
-                        ${needsSpecTruncate ? `<div class="shop-specialization-fade"></div>` : ''}
-                    </div>
-                    ${needsSpecTruncate ? `<button class="shop-specialization-btn" data-item-id="${item.id}">Читать далее ▼</button>` : ''}
-                </div>
-            `;
-        }
-
-        const descHtml = renderDescription(
-            description,
-            config.descriptionWrapperClass,
-            config.descriptionTextClass,
-            config.descriptionFadeClass,
-            config.readMoreBtnClass,
-            item.id
-        );
-
-        bodyContent += `
-            <div class="${config.fieldClass}">
-                <div class="${config.fieldLabelClass}">📝 Описание:</div>
-                ${descHtml}
-            </div>
-        `;
-
-        const linksHtml = renderFooterLinks(item.vk, item.website, config.vkLinkClass, config.websiteLinkClass);
-
-        card.innerHTML = `
-            <div class="${config.headerClass}">
-                <div class="${config.nameClass}">${item.name}</div>
-                <div class="${config.locationClass}" data-city="${item.city}">
-                    <span>📍</span>
-                    <span>${item.city}, ${item.country}</span>
-                </div>
-                <div style="font-size: 0.85rem; opacity: 0.75; margin-top: 4px; color: #4a3f35;">
-                    🗺️ ${itemRegion}
-                </div>
-            </div>
-            <div class="${config.bodyClass}">
-                ${item.eras ? `
-                    <div class="${config.fieldClass}">
-                        <div class="${config.fieldLabelClass}">🏰 Исторические эпохи:</div>
-                        <div class="${config.erasContainerClass}">${eraTags}</div>
-                    </div>
-                ` : ''}
-                ${bodyContent}
-            </div>
-            <div class="${config.footerClass}">
-                <div class="${config.linksClass}">
-                    ${linksHtml}
-                </div>
-                <div class="${config.idClass}">ID: ${item.id}</div>
-            </div>
-        `;
-
-        attachCardEvents(card, item);
-
-        return card;
+}
+@media (max-width: 480px) {
+    .filters select,
+    .tags-info-button,
+    .reset-button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        height: 40px;
     }
+}
 
-    function attachCardEvents(card, item) {
-        const config = state.config;
+/* Карта */
+.map-container {
+    height: 500px;
+    margin-bottom: 30px;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+#map { height: 100%; width: 100%; border-radius: 13px; }
 
-        const locationEl = card.querySelector(`.${config.locationClass}`);
-        if (locationEl) {
-            locationEl.addEventListener('click', function(e) {
-                e.stopPropagation();
-                selectCity(this.dataset.city);
-            });
-        }
+/* Leaflet кастомизация */
+.leaflet-control-zoom {
+    border: 2px solid var(--color-border) !important;
+    border-radius: 5px !important;
+    overflow: hidden !important;
+}
+.leaflet-control-zoom a {
+    background: var(--color-bg) !important;
+    color: var(--color-text) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+}
+.leaflet-control-zoom a:hover { background: #ffe4c4 !important; }
+.leaflet-popup-content-wrapper {
+    border-radius: 10px !important;
+    border: 2px solid var(--color-border) !important;
+    background: var(--color-bg) !important;
+}
+.leaflet-popup-tip { background: var(--color-bg) !important; }
 
-        const readMoreBtns = card.querySelectorAll(`.${config.readMoreBtnClass}`);
-        readMoreBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const wrapper = this.closest(`.${config.fieldClass}`).querySelector(`.${config.descriptionWrapperClass}`);
-                const isExpanded = wrapper.classList.contains('expanded');
+/* Маркеры */
+.flag-marker {
+    position: relative;
+    width: 40px;
+    height: 50px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+.flag-marker:hover { transform: scale(1.2); }
+.flag-pole {
+    position: absolute;
+    left: 18px; top: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(to bottom, #8b4513, #654321);
+    border-radius: 2px;
+}
+.flag-body {
+    position: absolute;
+    left: 22px; top: 5px;
+    width: 30px; height: 20px;
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    border-radius: 3px 8px 8px 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.flag-count {
+    color: var(--color-text);
+    font-weight: bold;
+    font-size: 11px;
+    text-shadow: 1px 1px 1px rgba(255,255,255,0.5);
+}
 
-                if (isExpanded) {
-                    wrapper.classList.remove('expanded');
-                    this.textContent = 'Читать далее ▼';
-                } else {
-                    wrapper.classList.add('expanded');
-                    this.textContent = 'Свернуть ▲';
-                }
-            });
-        });
+@media (max-width: 768px) { .map-container { height: 400px; } }
+@media (max-width: 480px) { .map-container { height: 350px; } }
 
-        const specBtns = card.querySelectorAll('.shop-specialization-btn');
-        specBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const wrapper = this.closest(`.${config.fieldClass}`).querySelector('.shop-specialization-wrapper');
-                const isExpanded = wrapper.classList.contains('expanded');
+/* Статистика */
+.stats {
+    padding: 20px;
+    margin-bottom: 20px;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    font-size: 1.1rem;
+    text-align: center;
+    color: var(--color-text);
+}
+@media (max-width: 768px) { .stats { padding: 15px; font-size: 1rem; } }
 
-                if (isExpanded) {
-                    wrapper.classList.remove('expanded');
-                    this.textContent = 'Читать далее ▼';
-                } else {
-                    wrapper.classList.add('expanded');
-                    this.textContent = 'Свернуть ▲';
-                }
-            });
-        });
+
+/* ============================================================
+   7. КАРТОЧКИ КАТАЛОГА
+   ============================================================ */
+
+/* Контейнеры */
+.clubs-container,
+.festivals-container,
+.shops-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+@media (max-width: 768px) {
+    .clubs-container,
+    .festivals-container,
+    .shops-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
     }
+}
 
-    // ============================================================
-    // ОТОБРАЖЕНИЕ КАРТОЧЕК
-    // ============================================================
+/* Базовая карточка (общая для клубов, мероприятий, магазинов) */
+.club-card,
+.festival-card,
+.shop-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 380px;
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+.club-card:hover,
+.festival-card:hover,
+.shop-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(139, 69, 19, 0.4);
+}
 
-    function displayItems(items) {
-        const config = state.config;
-        const container = document.getElementById(config.containerId);
-        if (!container) return;
+/* Декоративные полосы сверху и снизу */
+.club-card::before,
+.festival-card::before,
+.shop-card::before,
+.club-card::after,
+.festival-card::after,
+.shop-card::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 20px;
+    background: linear-gradient(45deg, transparent 10%, var(--color-bg) 10%, var(--color-bg) 90%, transparent 90%),
+                linear-gradient(-45deg, transparent 10%, var(--color-bg) 10%, var(--color-bg) 90%, transparent 90%);
+    background-size: 20px 20px;
+    z-index: 1;
+}
+.club-card::before,
+.festival-card::before,
+.shop-card::before { top: 0; }
+.club-card::after,
+.festival-card::after,
+.shop-card::after { bottom: 0; }
 
-        if (items.length === 0) {
-            container.innerHTML = `
-                <div class="no-results">
-                    <h3>${config.emptyMessage}</h3>
-                    <p>Попробуйте изменить параметры поиска или фильтры</p>
-                </div>
-            `;
-            return;
-        }
+/* Заголовок карточки */
+.club-header,
+.festival-header,
+.shop-header {
+    padding: 25px;
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+.club-name,
+.festival-name,
+.shop-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+}
+.club-location,
+.festival-location,
+.shop-location {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: opacity var(--transition);
+}
+.club-location:hover,
+.festival-location:hover,
+.shop-location:hover { opacity: 1; }
 
-        container.innerHTML = '';
+/* Тело карточки */
+.club-body,
+.festival-body,
+.shop-body {
+    padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+}
+.club-field,
+.festival-field,
+.shop-field {
+    margin-bottom: 15px;
+}
+.club-field:last-of-type,
+.festival-field:last-of-type,
+.shop-field:last-of-type {
+    margin-bottom: 0;
+    flex: 1;
+}
 
-        items.forEach((item, index) => {
-            const card = createItemCard(item, index);
-            container.appendChild(card);
-        });
+.field-label {
+    font-weight: 700;
+    color: var(--color-brown);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+}
+
+/* Теги эпох */
+.eras-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.era-tag {
+    padding: 5px 12px;
+    background: #ffe4c4;
+    color: var(--color-brown);
+    border: 1px solid var(--color-border);
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Описание с кнопкой "Читать далее" */
+.club-description-wrapper,
+.festival-description-wrapper,
+.shop-description-wrapper {
+    position: relative;
+    overflow: hidden;
+    max-height: 60px;
+    transition: max-height 0.4s ease;
+}
+.club-description-wrapper.expanded,
+.festival-description-wrapper.expanded,
+.shop-description-wrapper.expanded { max-height: 2000px; }
+
+.club-description-text,
+.festival-description-text,
+.shop-description-text {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.club-description-fade,
+.festival-description-fade,
+.shop-description-fade {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--color-bg-card));
+    pointer-events: none;
+    transition: opacity var(--transition);
+}
+.club-description-wrapper.expanded .club-description-fade,
+.festival-description-wrapper.expanded .festival-description-fade,
+.shop-description-wrapper.expanded .shop-description-fade { opacity: 0; }
+
+.club-read-more-btn,
+.festival-read-more-btn,
+.shop-description-btn {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 14px;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    color: var(--color-brown);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    align-self: flex-start;
+}
+.club-read-more-btn:hover,
+.festival-read-more-btn:hover,
+.shop-description-btn:hover {
+    background: #ffe4c4;
+    border-color: var(--color-border-dark);
+}
+
+/* Специализация (только для магазинов) */
+.shop-specialization-wrapper {
+    position: relative;
+    overflow: hidden;
+    max-height: 60px;
+    transition: max-height 0.4s ease;
+}
+.shop-specialization-wrapper.expanded { max-height: 2000px; }
+.shop-specialization-text {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.shop-specialization-fade {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--color-bg-card));
+    pointer-events: none;
+    transition: opacity var(--transition);
+}
+.shop-specialization-wrapper.expanded .shop-specialization-fade { opacity: 0; }
+.shop-specialization-btn {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 14px;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    color: var(--color-brown);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    align-self: flex-start;
+}
+.shop-specialization-btn:hover {
+    background: #ffe4c4;
+    border-color: var(--color-border-dark);
+}
+
+/* Футер карточки */
+.club-footer,
+.festival-footer,
+.shop-footer {
+    padding: 15px 25px;
+    background: var(--color-bg);
+    border-top: 2px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-top: auto;
+    position: relative;
+    z-index: 2;
+}
+.club-footer-links,
+.festival-footer-links,
+.shop-footer-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.vk-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+    color: var(--color-text);
+    border: 1px solid #c17e1a;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+.vk-link:hover {
+    background: linear-gradient(135deg, var(--color-gold-dark), var(--color-gold-darker));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.website-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #36aee6, #1c6dd1);
+    color: #fff;
+    border: 1px solid #1a5cc1;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+.website-link:hover {
+    background: linear-gradient(135deg, #1c6dd1, #1a5cb8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(28, 109, 209, 0.3);
+}
+
+.club-id,
+.festival-id,
+.shop-id {
+    color: var(--color-brown-light);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* Адаптив карточек */
+@media (max-width: 768px) {
+    .club-card, .festival-card, .shop-card { min-height: 320px; }
+    .club-header, .festival-header, .shop-header { padding: 18px 15px; }
+    .club-name, .festival-name, .shop-name { font-size: 1.3rem; }
+    .club-location, .festival-location, .shop-location { font-size: 1rem; }
+    .club-body, .festival-body, .shop-body { padding: 18px 15px; }
+    .club-footer, .festival-footer, .shop-footer { padding: 12px 15px; }
+    .vk-link, .website-link { padding: 6px 14px; font-size: 0.85rem; }
+}
+@media (max-width: 480px) {
+    .club-card, .festival-card, .shop-card { min-height: 280px; }
+    .club-footer, .festival-footer, .shop-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
     }
-
-    // ============================================================
-    // СТАТИСТИКА
-    // ============================================================
-
-    function updateStats() {
-        const config = state.config;
-        const statsElement = document.getElementById(config.statsId);
-        const totalElement = document.getElementById(config.totalId);
-
-        if (totalElement) {
-            totalElement.textContent = state.allItems.length;
-        }
-
-        if (!statsElement) return;
-
-        if (state.filteredItems.length === state.allItems.length) {
-            statsElement.innerHTML = `Показаны все <strong>${state.allItems.length}</strong> ${config.itemName}`;
-        } else {
-            const uniqueCities = new Set(state.filteredItems.map(item => item.city)).size;
-            const uniqueRegions = new Set(state.filteredItems.map(item => getItemRegion(item.city))).size;
-
-            let extraInfo = `<small>в <strong>${uniqueCities}</strong> городах, <strong>${uniqueRegions}</strong> регионах</small>`;
-
-            if (state.type === 'shops') {
-                const uniqueSpecs = new Set(
-                    state.filteredItems
-                        .filter(item => item.specialization)
-                        .flatMap(item => item.specialization.split(',').map(s => s.trim()).filter(s => s))
-                ).size;
-                extraInfo = `<small>в <strong>${uniqueCities}</strong> городах, <strong>${uniqueRegions}</strong> регионах, <strong>${uniqueSpecs}</strong> специализаций</small>`;
-            }
-
-            statsElement.innerHTML = `
-                Найдено <strong>${state.filteredItems.length}</strong> ${config.itemName} из <strong>${state.allItems.length}</strong>
-                <br>
-                ${extraInfo}
-            `;
-        }
+    .club-footer-links, .festival-footer-links, .shop-footer-links {
+        justify-content: center;
     }
-
-    // ============================================================
-    // ФИЛЬТРЫ
-    // ============================================================
-
-    function initFilters() {
-        const countryFilter = document.getElementById('countryFilter');
-        const regionFilter = document.getElementById('regionFilter');
-        const cityFilter = document.getElementById('cityFilter');
-        const eraFilter = document.getElementById('eraFilter');
-        const resetButton = document.getElementById('resetButton');
-
-        const sortAndAppend = (set, element) => {
-            if (!element) return;
-            while (element.options.length > 1) element.remove(1);
-            Array.from(set).sort().forEach(value => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = value;
-                element.appendChild(option);
-            });
-        };
-
-        sortAndAppend(state.countries, countryFilter);
-        sortAndAppend(state.regions, regionFilter);
-        sortAndAppend(state.cities, cityFilter);
-        sortAndAppend(state.eras, eraFilter);
-
-        if (state.type === 'shops') {
-            const specFilter = document.getElementById('specializationFilter');
-            if (specFilter) {
-                while (specFilter.options.length > 1) specFilter.remove(1);
-                Array.from(state.specializations).sort().forEach(spec => {
-                    const option = document.createElement('option');
-                    option.value = spec;
-                    option.textContent = spec;
-                    specFilter.appendChild(option);
-                });
-            }
-        }
-
-        // События с debounce для поиска
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            let timeout;
-            searchInput.addEventListener('input', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(applyFilters, 300);
-            });
-        }
-
-        // <-- НОВОЕ: обработчик чекбокса "Искать в описаниях"
-        const descCheckbox = document.getElementById('searchInDescription');
-        if (descCheckbox) {
-            descCheckbox.addEventListener('change', function() {
-                // Если в поиске уже есть текст — сразу применяем фильтр
-                if (getSearchTerm() !== '') {
-                    applyFilters();
-                }
-            });
-        }
-
-        countryFilter?.addEventListener('change', applyFilters);
-
-        // <-- ОБНОВЛЕНО: обработчик для фильтра регионов
-        regionFilter?.addEventListener('change', function() {
-            updateCityFilterByRegion();
-            applyFilters();
-
-            // Центрируем карту на выбранном регионе
-            const selectedRegion = this.value;
-            if (selectedRegion && state.map) {
-                centerMapOnRegion(selectedRegion);
-            } else if (!selectedRegion && state.map) {
-                state.map.setView(CONFIG.map.defaultCenter, CONFIG.map.defaultZoom);
-            }
-        });
-
-        cityFilter?.addEventListener('change', function() {
-            applyFilters();
-            const selectedCity = this.value;
-            if (selectedCity && state.map) {
-                centerMapOnCity(selectedCity);
-            }
-        });
-
-        eraFilter?.addEventListener('change', applyFilters);
-
-        const specFilter = document.getElementById('specializationFilter');
-        if (specFilter) specFilter.addEventListener('change', applyFilters);
-
-        resetButton?.addEventListener('click', resetFilters);
-    }
-
-    // Обновление списка городов в зависимости от выбранного региона
-    function updateCityFilterByRegion() {
-        const selectedRegion = getFilterValue('regionFilter');
-        const cityFilter = document.getElementById('cityFilter');
-        if (!cityFilter) return;
-
-        const currentCity = cityFilter.value;
-
-        while (cityFilter.options.length > 1) cityFilter.remove(1);
-
-        let citiesToShow = new Set();
-        if (selectedRegion === '') {
-            citiesToShow = state.cities;
-        } else {
-            state.allItems.forEach(item => {
-                if (getItemRegion(item.city) === selectedRegion) {
-                    citiesToShow.add(item.city);
-                }
-            });
-        }
-
-        Array.from(citiesToShow).sort().forEach(city => {
-            const option = document.createElement('option');
-            option.value = city;
-            option.textContent = city;
-            cityFilter.appendChild(option);
-        });
-
-        if (currentCity && citiesToShow.has(currentCity)) {
-            cityFilter.value = currentCity;
-        } else {
-            cityFilter.value = '';
-        }
-    }
-
-    function applyFilters() {
-        const searchTerm = getSearchTerm();
-        const searchInDescription = isSearchInDescriptionEnabled();
-        const selectedCountry = getFilterValue('countryFilter');
-        const selectedRegion = getFilterValue('regionFilter');
-        const selectedCity = getFilterValue('cityFilter');
-        const selectedEra = getFilterValue('eraFilter');
-        const selectedSpecialization = getFilterValue('specializationFilter');
-
-        state.filteredItems = state.allItems.filter(item => {
-            // --- ПОИСК ---
-            let matchesSearch = true;
-            if (searchTerm !== '') {
-                const itemRegion = getItemRegion(item.city);
-                const baseMatch =
-                    (item.name && item.name.toLowerCase().includes(searchTerm)) ||
-                    (item.city && item.city.toLowerCase().includes(searchTerm)) ||
-                    (itemRegion && itemRegion.toLowerCase().includes(searchTerm)) ||
-                    (item.country && item.country.toLowerCase().includes(searchTerm)) ||
-                    (item.specialization && item.specialization.toLowerCase().includes(searchTerm));
-
-                const descriptionMatch = searchInDescription &&
-                    item.description &&
-                    item.description.toLowerCase().includes(searchTerm);
-
-                matchesSearch = baseMatch || descriptionMatch;
-            }
-
-            // --- ФИЛЬТРЫ ---
-            const matchesCountry = selectedCountry === '' || item.country === selectedCountry;
-            const matchesCity = selectedCity === '' || item.city === selectedCity;
-            const matchesEra = selectedEra === '' || (item.eras && item.eras.includes(selectedEra));
-
-            const itemRegion = getItemRegion(item.city);
-            const matchesRegion = selectedRegion === '' || itemRegion === selectedRegion;
-
-            const matchesSpecialization = selectedSpecialization === '' ||
-                (item.specialization && item.specialization.toLowerCase().includes(selectedSpecialization.toLowerCase()));
-
-            return matchesSearch && matchesCountry && matchesRegion && matchesCity && matchesEra && matchesSpecialization;
-        });
-
-        displayItems(state.filteredItems);
-        updateStats();
-    }
-
-    function resetFilters() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('countryFilter').value = '';
-        document.getElementById('regionFilter').value = '';
-        document.getElementById('cityFilter').value = '';
-        document.getElementById('eraFilter').value = '';
-        const specFilter = document.getElementById('specializationFilter');
-        if (specFilter) specFilter.value = '';
-
-        // Сбрасываем чекбокс "Искать в описаниях"
-        const descCheckbox = document.getElementById('searchInDescription');
-        if (descCheckbox) descCheckbox.checked = true;
-
-        updateCityFilterByRegion();
-        applyFilters();
-
-        if (state.map) {
-            state.map.setView(CONFIG.map.defaultCenter, CONFIG.map.defaultZoom);
-        }
-    }
-
-    // ============================================================
-    // КАРТА
-    // ============================================================
-
-    function initMap() {
-        if (typeof L === 'undefined') {
-            console.warn('Leaflet не загружен');
-            return;
-        }
-
-        state.map = L.map('map').setView(CONFIG.map.defaultCenter, CONFIG.map.defaultZoom);
-        state.map.attributionControl.remove();
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-        }).addTo(state.map);
-
-        L.control.zoom({
-            position: 'topright'
-        }).addTo(state.map);
-
-        addCityMarkers();
-    }
-
-    function addCityMarkers() {
-        const itemsByCity = {};
-        state.allItems.forEach(item => {
-            if (!itemsByCity[item.city]) {
-                itemsByCity[item.city] = [];
-            }
-            itemsByCity[item.city].push(item);
-        });
-
-        Object.keys(itemsByCity).forEach(city => {
-            const cityItems = itemsByCity[city];
-            const cityCoord = getCityCoordinates(city);
-
-            if (cityCoord && state.map) {
-                const itemCount = cityItems.length;
-
-                const flagIcon = L.divIcon({
-                    className: 'flag-marker',
-                    html: `
-                        <div class="flag-marker">
-                            <div class="flag-pole"></div>
-                            <div class="flag-body">
-                                <div class="flag-count">${itemCount}</div>
-                            </div>
-                        </div>
-                    `,
-                    iconSize: [40, 50],
-                    iconAnchor: [20, 50],
-                    popupAnchor: [0, -50]
-                });
-
-                const marker = L.marker(cityCoord, { icon: flagIcon }).addTo(state.map);
-
-                const eras = new Set();
-                const sampleItems = cityItems.slice(0, 3);
-                cityItems.forEach(item => {
-                    if (item.eras) {
-                        item.eras.forEach(era => eras.add(era));
-                    }
-                });
-
-                const eraList = Array.from(eras).slice(0, 5).join(', ') + (eras.size > 5 ? '...' : '');
-
-                let itemList = '';
-                sampleItems.forEach(item => {
-                    itemList += `<div style="margin: 5px 0; padding: 5px; background: #ffe4c4; border-radius: 3px;">
-                        <strong>${item.name}</strong>
-                        ${item.specialization ? `<div><small>${item.specialization}</small></div>` : ''}
-                    </div>`;
-                });
-
-                if (cityItems.length > 3) {
-                    itemList += `<div style="margin: 5px 0; color: #8b4513; font-style: italic;">... и еще ${cityItems.length - 3} ${state.config.itemName}</div>`;
-                }
-
-                const cityRegion = getItemRegion(city);
-
-                marker.bindPopup(`
-                    <div style="min-width: 250px;">
-                        <h3 style="margin: 0 0 5px 0; color: #8b4513;">${city}</h3>
-                        <div style="font-size: 0.85rem; color: #6a5a4a; margin-bottom: 8px;">${cityRegion}</div>
-                        <p><strong>${state.config.itemName} в городе:</strong> ${itemCount}</p>
-                        <p><strong>Исторические эпохи:</strong> ${eraList}</p>
-                        ${itemCount > 0 ? `<p><strong>Примеры ${state.config.itemName}:</strong></p>${itemList}` : ''}
-                        <button onclick="window.selectCity('${city}')" style="
-                            background: linear-gradient(135deg, #e6a336, #d1891c);
-                            color: #333;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 5px;
-                            cursor: pointer;
-                            font-weight: bold;
-                            margin-top: 10px;
-                            width: 100%;
-                        ">
-                            Показать ${state.config.itemName} (${itemCount})
-                        </button>
-                    </div>
-                `);
-
-                marker.on('click', function() {
-                    selectCity(city);
-                });
-
-                state.cityMarkers[city] = marker;
-            }
-        });
-    }
-
-    function centerMapOnCity(city) {
-        const cityCoord = getCityCoordinates(city);
-        if (cityCoord && state.map) {
-            state.map.setView(cityCoord, CONFIG.map.cityZoom);
-            if (state.cityMarkers[city]) {
-                setTimeout(() => {
-                    state.cityMarkers[city].openPopup();
-                }, 500);
-            }
-        }
-    }
-
-    /**
-     * Центрирует карту на регионе: вычисляет средние координаты всех городов региона
-     * и подбирает подходящий зум в зависимости от разброса точек.
-     */
-    function centerMapOnRegion(regionName) {
-        if (!state.map || !regionName) return;
-
-        const coords = [];
-        state.allItems.forEach(item => {
-            if (getItemRegion(item.city) === regionName) {
-                const c = getCityCoordinates(item.city);
-                if (c) coords.push(c);
-            }
-        });
-
-        if (coords.length === 0) return;
-
-        // Если город один — просто центрируемся на нём
-        if (coords.length === 1) {
-            state.map.setView(coords[0], CONFIG.map.cityZoom);
-            return;
-        }
-
-        let sumLat = 0, sumLng = 0;
-        let minLat = coords[0][0], maxLat = coords[0][0];
-        let minLng = coords[0][1], maxLng = coords[0][1];
-
-        coords.forEach(([lat, lng]) => {
-            sumLat += lat;
-            sumLng += lng;
-            if (lat < minLat) minLat = lat;
-            if (lat > maxLat) maxLat = lat;
-            if (lng < minLng) minLng = lng;
-            if (lng > maxLng) maxLng = lng;
-        });
-
-        const center = [sumLat / coords.length, sumLng / coords.length];
-
-        // Подбираем зум по разбросу координат
-        const latSpan = maxLat - minLat;
-        const lngSpan = maxLng - minLng;
-        const maxSpan = Math.max(latSpan, lngSpan);
-
-        let zoom;
-        if (maxSpan < 0.5)       zoom = 10;  // Москва и окрестности
-        else if (maxSpan < 1.5)  zoom = 9;   // Московская область
-        else if (maxSpan < 3)    zoom = 8;   // Несколько областей
-        else if (maxSpan < 8)    zoom = 7;   // Большой регион
-        else if (maxSpan < 20)   zoom = 6;   // Крупный ФО
-        else                     zoom = 5;   // Полстраны
-
-        state.map.setView(center, zoom, { animate: true });
-    }
-
-    window.selectCity = function(city) {
-        const cityFilter = document.getElementById('cityFilter');
-        if (cityFilter) {
-            cityFilter.value = city;
-        }
-        applyFilters();
-        const statsEl = document.getElementById(state.config?.statsId);
-        if (statsEl) {
-            statsEl.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
-
-    // ============================================================
-    // НАВИГАЦИЯ
-    // ============================================================
-
-    function loadNavigationModule() {
-        if (document.getElementById('mainNavigation')) {
-            return Promise.resolve();
-        }
-
-        return fetch('navigation-module.html')
-            .then(response => {
-                if (!response.ok) throw new Error('Не удалось загрузить модуль навигации');
-                return response.text();
-            })
-            .then(html => {
-                document.body.insertAdjacentHTML('afterbegin', html);
-                console.log('✅ Навигация загружена');
-            })
-            .catch(error => {
-                console.warn('Ошибка загрузки навигации:', error);
-                createFallbackNavigation();
-            });
-    }
-
-    function createFallbackNavigation() {
-        if (document.getElementById('fallbackNav')) return;
-
-        const fallbackNav = document.createElement('nav');
-        fallbackNav.id = 'fallbackNav';
-        fallbackNav.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(30, 20, 10, 0.95);
-            border-bottom: 2px solid #d4a574;
-            z-index: 999;
-            padding: 8px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-            min-height: 50px;
-        `;
-        fallbackNav.innerHTML = `
-            <a href="index.html" style="color: #e6a336; text-decoration: none; font-weight: bold; font-size: 0.95rem; padding: 4px 10px; border: 1px solid #d4a574; border-radius: 5px; background: rgba(139, 69, 19, 0.2);">
-                🏠 РеконХаб
-            </a>
-            <div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
-                <a href="index.html" style="color: #f5ebd8; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 0.85rem;">Главная</a>
-                <a href="clubs.html" style="color: #f5ebd8; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 0.85rem;">Клубы</a>
-                <a href="festivals.html" style="color: #f5ebd8; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 0.85rem;">Мероприятия</a>
-                <a href="shops.html" style="color: #f5ebd8; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 0.85rem;">Магазины</a>
-                <a href="feedback.html" style="color: #333; text-decoration: none; padding: 4px 12px; background: linear-gradient(135deg, #e6a336, #d1891c); border-radius: 4px; font-weight: 700; font-size: 0.85rem; border: 1px solid #c17e1a;">💬 Обратная связь</a>
-            </div>
-        `;
-        document.body.insertAdjacentElement('afterbegin', fallbackNav);
-    }
-
-    // ============================================================
-    // ЗАГРУЗКА ДАННЫХ
-    // ============================================================
-
-    async function loadData() {
-        const config = getConfig();
-        if (!config) return;
-
-        state.config = config;
-
-        try {
-            const response = await fetch(config.dataFile);
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-            const data = await response.json();
-            state.allItems = data[config.dataKey] || [];
-
-            state.countries = new Set();
-            state.regions = new Set();
-            state.cities = new Set();
-            state.eras = new Set();
-            state.specializations = new Set();
-
-            state.allItems.forEach(item => {
-                state.countries.add(item.country);
-                state.cities.add(item.city);
-                state.regions.add(getItemRegion(item.city));
-
-                if (item.eras) {
-                    item.eras.forEach(era => state.eras.add(era));
-                }
-                if (state.type === 'shops' && item.specialization) {
-                    const specs = item.specialization.split(',').map(s => s.trim()).filter(s => s);
-                    specs.forEach(spec => state.specializations.add(spec));
-                }
-            });
-
-            initFilters();
-            initMap();
-            state.filteredItems = [...state.allItems];
-            displayItems(state.filteredItems);
-            updateStats();
-
-        } catch (error) {
-            console.error('Ошибка загрузки данных:', error);
-            const container = document.getElementById(state.config.containerId);
-            if (container) {
-                container.innerHTML = `
-                    <div class="no-results">
-                        <h3>Ошибка загрузки данных</h3>
-                        <p>Не удалось загрузить данные. Проверьте наличие файла ${state.config.dataFile}</p>
-                    </div>
-                `;
-            }
-        }
-    }
-
-    // ============================================================
-    // ИНИЦИАЛИЗАЦИЯ
-    // ============================================================
-
-    function init() {
-        state.type = getCatalogType();
-        if (!state.type) {
-            console.warn('Не удалось определить тип каталога');
-            return;
-        }
-
-        console.log(`📋 Инициализация модуля каталога: ${state.type}`);
-
-        if (typeof window.setCurrentDate === 'function') {
-            window.setCurrentDate();
-        }
-
-        loadNavigationModule()
-            .then(() => {
-                loadData();
-            })
-            .catch(() => {
-                loadData();
-            });
-    }
-
-    // ============================================================
-    // ЗАПУСК
-    // ============================================================
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-    // ============================================================
-    // ЭКСПОРТ
-    // ============================================================
-
-    window.loadNavigationModule = loadNavigationModule;
-    window.catalogModule = {
-        state: state,
-        CONFIG: CONFIG,
-        getCatalogType: getCatalogType,
-        getConfig: getConfig,
-        loadData: loadData,
-        applyFilters: applyFilters,
-        resetFilters: resetFilters,
-        selectCity: window.selectCity,
-        centerMapOnCity: centerMapOnCity,
-        centerMapOnRegion: centerMapOnRegion,
-        renderEraTags: renderEraTags,
-        renderDescription: renderDescription,
-        renderFooterLinks: renderFooterLinks,
-        loadNavigationModule: loadNavigationModule,
-        setCurrentDate: window.setCurrentDate,
-        getItemRegion: getItemRegion,
-        isSearchInDescriptionEnabled: isSearchInDescriptionEnabled
-    };
-
-})();
+    .vk-link, .website-link { justify-content: center; flex: 1; }
+    .club-id, .festival-id, .shop-id { text-align: center; }
+}
+
+
+/* ============================================================
+   8. СОСТОЯНИЯ (загрузка / пустота)
+   ============================================================ */
+
+.loading,
+.no-results {
+    text-align: center;
+    padding: 80px 20px;
+    grid-column: 1 / -1;
+}
+.loading {
+    color: var(--color-white);
+    font-size: 1.3rem;
+}
+.no-results {
+    color: var(--color-white);
+    font-size: 1.3rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+}
