@@ -420,6 +420,17 @@
     },
     {
       "id": 39,
+      "name": "Гуляй город",
+      "city": "Москва",
+      "country": "Россия",
+      "eras": ["Ролевка"],
+      "description": "Продажа Larp оружия и аренда ролевых домов",
+      "specialization": "ролевой стафф",
+      "vk": "https://vk.ru/gulay_grad",
+      "website": "https://b2b.moysklad.ru/public/4zcFfm8actxL/catalog"
+    },
+    {
+      "id": 40,
       "name": "BRENNSKIP",
       "city": "Благовещенск",
       "country": "Россия",
