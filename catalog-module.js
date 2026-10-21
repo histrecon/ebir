@@ -111,7 +111,7 @@
     
     function sortErasChronologically(erasSet) {
         const centuriesOrder = [
-            'VI в. до н.э.', 'V в. до н.э.', 'IV в. до н.э.', 'III в. до н.э.', 
+            'XV в. до н.э.', 'XIV в. до н.э.', 'XIII в. до н.э.', 'VI в. до н.э.', 'V в. до н.э.', 'IV в. до н.э.', 'III в. до н.э.', 
             'II в. до н.э.', 'I в. до н.э.',
             'I в.', 'II в.', 'III в.', 'IV в.', 'V в.', 'VI в.', 'VII в.', 
             'VIII в.', 'IX в.', 'X в.', 'XI в.', 'XII в.', 'XIII в.', 'XIV в.', 
