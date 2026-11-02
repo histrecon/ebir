@@ -654,18 +654,22 @@
             let matchesEra = true;
             if (selectedEra !== '') {
                 const itemEras = item.eras || [];
-                const hasMultiEra = itemEras.some(era => era.toLowerCase().includes('мультивек'));
                 const hasExactEra = matchesEraWithSubstitution(itemEras, selectedEra);
+                const hasMultiEra = itemEras.some(era => era.toLowerCase().includes('мультивек'));
                 
-                // Список направлений, при которых Мультивек НЕ должен показываться
+                // Список направлений (пишем так, как они выглядят на сайте, для удобства чтения)
                 const strictEras = ['СМБ', 'БИФ', 'ИСБ', 'СБ', 'HEMA', 'Ролевка'];
-                const isStrictEra = strictEras.includes(selectedEra.toLowerCase());
                 
-                // Логика:
-                // 1. Если есть точное совпадение — показываем (например, клуб именно с тегом ИСБ)
-                // 2. Если выбрана строгая эпоха (ИСБ, СМБ и т.д.) — Мультивек не показываем
-                // 3. В остальных случаях (например, выбрали "XIII в.") — Мультивек показываем
-                matchesEra = hasExactEra || (!isStrictEra && hasMultiEra);
+                // Приводим всё к нижнему регистру при проверке, чтобы избежать ошибок с регистром
+                const isStrictEra = strictEras.some(era => era.toLowerCase() === selectedEra.toLowerCase());
+                
+                if (isStrictEra) {
+                    // Если выбрано строгое направление, Мультивек игнорируем
+                    matchesEra = hasExactEra;
+                } else {
+                    // В остальных случаях Мультивек разрешен
+                    matchesEra = hasExactEra || hasMultiEra;
+                }
             }
 
             const matchesSpecialization = selectedSpecialization === '' ||
